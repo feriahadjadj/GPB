@@ -1,0 +1,142 @@
+@@charset "UTF-8";
+
+
+body ,html {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+
+	font-family: 'Raleway',sans-serif;
+}
+
+a ,a:hover {
+	text-decoration: none;
+}
+/*topbar*/
+
+.topbar {
+	background-color: #000;
+	line-height: 25px;
+}
+
+.barmenu {
+font-weight: normal;
+text-align: center;
+}
+
+.barmenu a {
+	color: #ffffff;
+	margin: 15px;
+}
+
+/*fin topbar*/
+/* header */
+.header {
+	background-color: #333;
+	height: 70px;
+	line-height: 70px;
+}
+
+.searchform {
+	margin-top: 20px;
+}
+
+.logo img {
+	width :150px;
+}
+
+.menu {
+letter-spacing: 1px;
+font-weight: bold;
+text-transform: uppercase;
+float: right;
+
+}
+.menu :hover {
+	border-bottom: 1px #017878;
+}
+
+.menu a {
+	color: #ffffff;
+	margin: 15px;
+
+}
+
+.menu a:hover {
+	color: #017878;
+
+}
+/* banner*/
+.container-fluid {
+	padding: 0;
+}
+
+.banner {
+width: 100%;
+max-width: 100%;
+
+}
+
+.ban {
+width: 100%;
+max-width: 100%;
+position: relative;
+}
+
+.ban img {
+width: 100%;
+max-width: 100%;
+
+}
+
+.inner-banner {
+position: absolute;
+top: 45%;
+width: 100%;
+text-align: center;
+color: #fff;
+text-shadow: 1px 1px 20px #000;
+
+}
+.inner-banner .btn-custom{
+	background-color: #6bc5a4;
+	color: #fff;
+
+}
+.inner-banner .btn-custom:hover{
+	background-color: #017878;
+
+}
+/*about*/
+
+.about {
+	text-align: center;
+	padding-top: 5%;
+	margin-bottom: 5%;
+}
+.about article {
+	margin-top: 5%;
+
+
+}
+.about article h2 {
+	text-align: center;
+}
+
+.about article p {
+	text-align: center;
+}
+
+.about .btn-custom{
+	background-color: #6bc5a4;
+	color: #fff;
+
+}
+
+
+
+
+
+/*contact*/
