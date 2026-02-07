@@ -142,73 +142,35 @@
                     <th>Détail de la modification</th>
                 </tr>
             </thead>
-            <tbody>
+           @forelse($histories as $h)
+<tr>
+    <td>{{ \Carbon\Carbon::parse($h->created_at)->format('d-m-Y H:i') }}</td>
+    <td>
+        @php
+    $labels = [
+        'finance' => 'Financement',
+        'delaiE' => 'Délai des études',
+        'delaiR' => 'Délai de réalisation',
+        'odsEtude' => 'ODS Etude',
+        'odsRealisation' => 'ODS Réalisation',
+        'dateReception' => 'Date réception',
+        'dateMiseEnOeuvre' => 'Date mise en service',
+    ];
+@endphp
 
-                <!-- FAKE DATA ALGÉRIE POSTE -->
-                <tr>
-                    <td>04-02-2026 11:42</td>
-                    <td>
-                        <strong>Montant alloué</strong> modifié de
-                        <span class="old-value">18 000 000 DZD</span>
-                        →
-                        <span class="new-value">20 500 000 DZD</span>
-                        (Réévaluation budgétaire validée)
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>02-02-2026 15:18</td>
-               <td>
-    État :
-    <span class="status status-old">NL</span>
-    →
-    <span class="status status-new">E</span>
-</td>
-
-                </tr>
-
-                <tr>
-                    <td>31-01-2026 09:55</td>
-                    <td>
-                        <strong>Délai des études</strong> prolongé :
-                        <span class="old-value">30 jours</span>
-                        →
-                        <span class="new-value">45 jours</span>
-                        (Retard de validation technique)
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>29-01-2026 14:07</td>
-                    <td>
-                        <strong>Montant des paiements cumulés</strong> mis à jour :
-                        <span class="old-value">8 200 000 DZD</span>
-                        →
-                        <span class="new-value">10 000 000 DZD</span>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>27-01-2026 16:30</td>
-                    <td>
-                        Ajout d’une <strong>observation terrain</strong> :
-                        <em>
-                            « Difficulté d’accès au site de construction,
-                            impact sur le rythme d’avancement »
-                        </em>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>25-01-2026 10:12</td>
-                    <td>
-                        <strong>Création du projet</strong>  
-                        (Type : Logements d’astreinte – Algérie Poste,
-                        Financement : Budget central)
-                    </td>
-                </tr>
-
-            </tbody>
+<strong>{{ $labels[$h->field] ?? $h->field }}</strong> modifié de
+        <span class="old-value">{{ $h->old_value ?? '-' }}</span>
+        →
+        <span class="new-value">{{ $h->new_value ?? '-' }}</span>
+    </td>
+</tr>
+@empty
+<tr>
+    <td colspan="2" style="text-align:center; color:#6b7280;">
+        Aucun historique pour ce projet.
+    </td>
+</tr>
+@endforelse
         </table>
     </div>
 </div>

@@ -186,7 +186,16 @@
     <label class="col-sm-2">Taux d'avancement<span style='color: red;'>*</span></label>
     <div class="col-sm-2">
 
-        <input name="tauxA" id="tauxA" type="number" class="form-control" autocomplete="off"  min="0" maxlength="2" minlength="0" placeholder="%" value={!! $projet->tauxA ?? '0' !!} title=""/>
+       <input 
+    name="tauxA"
+    id="tauxA"
+    type="number"
+    class="form-control"
+    autocomplete="off"
+    min="{{ $projet->tauxA ?? 0 }}"
+    placeholder="%"
+    value="{{ $projet->tauxA ?? 0 }}"
+/>
 
     </div>
 

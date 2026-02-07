@@ -13,7 +13,8 @@ use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
+use App\ProjectHistory;
+
 class projetController extends Controller
 {
     public function __construct()
@@ -155,17 +156,31 @@ class projetController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-        $data = $request->all();
-        $projet = Projet::find($id);
+{
+    $data = $request->all();
+    $projet = Projet::find($id);
 
-        if ($data['delai'] == 'jourE') {
-            $delai = ' j';
-        } else {
-            $delai = ' m';
-        }
+    // ✅ ADD: tracked fields + snapshot BEFORE update
+    $tracked = [
+        // Projet table fields we want to track
+        'finance',
+        'delaiE',
+        'delaiR',
+        'odsEtude',
+        'odsRealisation',
+        'dateReception',
+        'dateMiseEnOeuvre',
+        // add more later if needed
+    ];
+    $before = $projet ? $projet->only($tracked) : [];
 
-        if($data['odsRealisation']!= null){
+    if ($data['delai'] == 'jourE') {
+        $delai = ' j';
+    } else {
+        $delai = ' m';
+    }
+
+    if($data['odsRealisation']!= null){
 
         $dateR = Carbon::parse($data['odsRealisation']);
 
@@ -186,35 +201,59 @@ class projetController extends Controller
         }
     }
 
-        $data['delaiE'] = $data['delaiE'] . " " . $delai;
-        $data['delaiR'] = $data['delaiR'] . " " . $r;
+    $data['delaiE'] = $data['delaiE'] . " " . $delai;
+    $data['delaiR'] = $data['delaiR'] . " " . $r;
 
-        $projet->update($data);
-        $projet->save();
+    $projet->update($data);
+    $projet->save();
 
-        $av = $request->only(['montantAlloue', 'montantEC', 'montantPC', 'delaiR', 'etatPhysique', 'tauxA', 'observation']);
-        $av['projet_id'] = $projet->id;
-        $av['delaiR'] = $av['delaiR'] . " " . $r;
+    // ✅ ADD: snapshot AFTER update + log only changed fields (Projet fields)
+    $after = $projet->fresh()->only($tracked);
 
-        $check = Avancement::where($av)->exists();
+    foreach ($tracked as $field) {
+        $old = array_key_exists($field, $before) ? (string) $before[$field] : null;
+        $new = array_key_exists($field, $after)  ? (string) $after[$field]  : null;
 
-        if ($check == false) {
-            $avancement = Avancement::create($av);
-            $avancement->save();
+        // normalize null/empty
+        $oldNorm = ($old === '' ? null : $old);
+        $newNorm = ($new === '' ? null : $new);
+
+        if ($oldNorm !== $newNorm) {
+            ProjectHistory::create([
+                'projet_id'   => $projet->id,
+                'user_id'     => Auth::id(), // ✅ uses your existing Auth import
+                'action'      => 'updated',
+                'field'       => $field,
+                'old_value'   => $oldNorm,
+                'new_value'   => $newNorm,
+                'description' => null,
+            ]);
         }
-        // notification -------------------------------------------------------------
-
-        $users = User::all();
-        foreach ($users as $user) {
-            if ($user->roles->contains('name', 'superA')) {
-                $user->notify(new userNotification(Auth::user(), $projet, 'modification', Auth::user()->name . ' a modifié le projet ' . $projet->designation));
-            }
-        }
-
-        return redirect()
-            ->route('projet.voirprojet', $id);
     }
 
+    $av = $request->only(['montantAlloue', 'montantEC', 'montantPC', 'delaiR', 'etatPhysique', 'tauxA', 'observation']);
+    $av['projet_id'] = $projet->id;
+    $av['delaiR'] = $av['delaiR'] . " " . $r;
+
+    $check = Avancement::where($av)->exists();
+
+    if ($check == false) {
+        $avancement = Avancement::create($av);
+        $avancement->save();
+    }
+
+    // notification -------------------------------------------------------------
+
+    $users = User::all();
+    foreach ($users as $user) {
+        if ($user->roles->contains('name', 'superA')) {
+            $user->notify(new userNotification(Auth::user(), $projet, 'modification', Auth::user()->name . ' a modifié le projet ' . $projet->designation));
+        }
+    }
+
+    return redirect()
+        ->route('projet.voirprojet', $id);
+}
     /**
      * Remove the specified resource from storage.
      *
@@ -248,19 +287,28 @@ class projetController extends Controller
     }
 
     public function voirProjet($id)
-    {
-        $projet = Projet::find($id);
-        if($projet!=null){
-            $natures = Nature::all();
+{
+    $projet = Projet::find($id);
+    if($projet!=null){
+        $natures = Nature::all();
         $finances = Finance::orderBy('name', 'DESC')->get();
 
-        return view('projet/voirProjet')
-            ->with(['projet' => $projet, 'natures' => $natures, 'finances' => $finances]);
-        }else{
-            return redirect()->back()->with('error',"ce projet n'existe pas");
-        }
+        // ✅ ADD: load project histories (latest first)
+        $histories = ProjectHistory::where('projet_id', $projet->id)
+            ->orderBy('created_at', 'DESC')
+            ->get();
 
+        return view('projet/voirProjet')
+            ->with([
+                'projet' => $projet,
+                'natures' => $natures,
+                'finances' => $finances,
+                'histories' => $histories, // ✅ ADD
+            ]);
+    }else{
+        return redirect()->back()->with('error',"ce projet n'existe pas");
     }
+}
 
     //gestion des projets
 
@@ -432,13 +480,16 @@ class projetController extends Controller
             ->with(['retards' => $retards, 'id' => $id]);
     }
 
-    
     public function storeRetard(Request $request, $id)
     {
 
         $projet = Projet::find($id);
 
-        $data = $request->except('_token', '_method');
+       $data = $request->except('_token', '_method', 'attachment'); 
+
+    if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) { 
+        $data['attachment'] = $request->file('attachment')->store('retards', 'public');
+    }
 
         $retard = Retard::create($data);
 
