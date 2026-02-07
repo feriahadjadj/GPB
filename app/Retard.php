@@ -6,20 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Retard extends Model
 {
-    //
-
-
     protected $fillable = [
         'projet_id',
         'type',
         'date_arret',
         'date_reprise',
-        'reason'
-
+        'reason',
+        'attachment'   // ✅ REQUIRED
     ];
 
-    function projet(){
-
+    public function projet()
+    {
         return $this->belongsTo('App\Projet');
     }
 }

@@ -155,12 +155,7 @@
           <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
             <a href="{{ route('admin.users.index') }}" >
             <div class="features-icons-icon d-flex">
-              <i class="icon-people m-auto text-primary"> </i>
-            </div>
-          </a>
-            <h3>Gestion des utilisateurs</h3>
-            <p class="lead mb-0">Gerez vos utilisateurs</p>
-
+             
           </div>
         </div>
         @endcan
@@ -169,22 +164,50 @@
          <div class="col-lg-6">
           <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
             <a href="{{ route('projet.gestionprojets',['id'=>Auth::user()->id,'finance'=>'tout','year'=>Carbon\Carbon::today()->year]) }}" >
-            <div class="features-icons-icon d-flex">
-              <i class="icon-note m-auto text-primary"></i>
-            </div>
-            </a>
-            <h3>Gestion des projet</h3>
-            <p class="lead mb-0">Gerez vos projets </p>
-          </div>
-        </div>
+           
 
       </div>
     </div>
   </section>
+
+  @if(Auth::user()->hasRole('superA'))
+  <section class="col-md-12 section-chart">
+      <div class="form-inline mb-3" style="display: flex">
+        <div class="form-group" style="margin: 0 0 auto auto">
+            <label for="wilaya-super"><strong>Wilaya</strong></label>
+            <select name="wilaya" id="wilaya-super" class="wilaya form-control">
+                <option value="all">Tous les UPWs</option>
+                @foreach (App\User::all() as $user) 
+                    @if($user->roles->contains('name','user'))
+                        <option value="{{$user->id}}">{{$user->name}}</option>
+                    @endif 
+                @endforeach
+            </select>
+        </div>
+      </div>
+
+      <!-- Charts Row for SuperAdmin Role -->
+      <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+              <div class="dashboard-card p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
+                  <canvas id="mychart-super" style="width: 100%; height: 100%;"></canvas>
+              </div>
+          </div>
+          <div class="col-12 col-md-6">
+              <div class="d-card">
+                  <div class="dashboard-card card-padding full-height p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
+                      <canvas id="doughnut-chart-super" width="400" height="225"></canvas>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+  @endif
+
   @can('upw-role')
 
-  <section class=" col-md-6  section-chart">
-      <div class="form-inline" style="display: flex">
+  <section class="col-md-12 section-chart">
+      <div class="form-inline mb-3" style="display: flex">
         <div class="form-group " style="margin: 0 0 auto auto ">
             <label for="wilaya" > <strong>Wilaya</strong>  </label>
            <select name="wilaya" id="wilaya" class="wilaya form-control ">
@@ -199,15 +222,21 @@
           </div>
       </div>
 
-              <div class="d-card ">
-                  <div class=" dashboard-card card-padding full-height" style="padding: 30px">
-
-
-                  <canvas id="doughnut-chart" width="400" height="225"></canvas>
-
-
+      <!-- Charts Row for User Role -->
+      <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+              <div class="dashboard-card p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
+                  <canvas id="mychart-user" style="width: 100%; height: 100%;"></canvas>
               </div>
+          </div>
+          <div class="col-12 col-md-6">
+              <div class="d-card">
+                  <div class="dashboard-card card-padding full-height" style="padding: 30px; min-height: 350px; background: #f8f9fa;">
+                      <canvas id="doughnut-chart" width="400" height="225"></canvas>
+                  </div>
               </div>
+          </div>
+      </div>
 
     </section>
 
@@ -225,60 +254,77 @@
 </div>
 
  <!-- KPI Cards Row -->
+<!-- KPI Cards Row -->
 <div class="row g-3 mb-3">
-   <div class="col-12 col-md-3">
-    <div class="kpi-card kpi-primary">
-        <div>
-            <div class="kpi-title">Total Projets</div>
-<div class="kpi-value">
-                    {{ \App\Projet::where(function($q) { 
-                        $q->whereYear('dateMiseEnOeuvre', date('Y'))
-                          ->orWhereNull('dateMiseEnOeuvre'); 
-                    })->count() }}
-                </div>        </div>
-        <i class="fas fa-project-diagram kpi-icon"></i>
-    </div>
-</div>
 
-<div class="col-12 col-md-3">
-    <div class="kpi-card kpi-success">
-        <div>
-            <div class="kpi-title">Projets Achevés</div>
- <div class="kpi-value">
-                    {{ \App\Projet::where('etatPhysique', 'R')
-                        ->where(function($q) {
+    <!-- Total Projets -->
+    <div class="col-12 col-md-3">
+        <div class="kpi-card kpi-primary">
+            <div>
+                <div class="kpi-title">Total Projets</div>
+                <div class="kpi-value">
+                    {{
+                        \App\Projet::where(function ($q) {
                             $q->whereYear('dateMiseEnOeuvre', date('Y'))
                               ->orWhereNull('dateMiseEnOeuvre');
-                        })->count() }}
-                </div>        </div>
-        <i class="fas fa-check-circle kpi-icon"></i>
-    </div>
-</div>
-
-<div class="col-12 col-md-3">
-    <div class="kpi-card kpi-warning">
-        <div>
-            <div class="kpi-title">Projets en Réalisation</div>
-<div class="kpi-value">
-                    {{ \App\Projet::where('etatPhysique', 'E')
-                        ->where(function($q) {
-                            $q->whereYear('dateMiseEnOeuvre', date('Y'))
-                              ->orWhereNull('dateMiseEnOeuvre');
-                        })->count() }}
-                </div>        </div>
-        <i class="fas fa-spinner kpi-icon"></i>
-    </div>
-</div>
-
-<div class="col-12 col-md-3">
-    <div class="kpi-card kpi-info">
-        <div>
-            <div class="kpi-title">Utilisateurs</div>
-            <div class="kpi-value">{{ App\User::count() }}</div>
+                        })->count()
+                    }}
+                </div>
+            </div>
+            <i class="fas fa-project-diagram kpi-icon"></i>
         </div>
-        <i class="fas fa-users kpi-icon"></i>
     </div>
-</div>
+
+    <!-- Projets Achevés -->
+    <div class="col-12 col-md-3">
+        <div class="kpi-card kpi-success">
+            <div>
+                <div class="kpi-title">Projets Achevés</div>
+                <div class="kpi-value">
+                    {{
+                        \App\Projet::where('etatPhysique', 'R')
+                            ->where(function ($q) {
+                                $q->whereYear('dateMiseEnOeuvre', date('Y'))
+                                  ->orWhereNull('dateMiseEnOeuvre');
+                            })->count()
+                    }}
+                </div>
+            </div>
+            <i class="fas fa-check-circle kpi-icon"></i>
+        </div>
+    </div>
+
+    <!-- Projets en Réalisation -->
+    <div class="col-12 col-md-3">
+        <div class="kpi-card kpi-warning">
+            <div>
+                <div class="kpi-title">Projets en Réalisation</div>
+                <div class="kpi-value">
+                    {{
+                        \App\Projet::where('etatPhysique', 'E')
+                            ->where(function ($q) {
+                                $q->whereYear('dateMiseEnOeuvre', date('Y'))
+                                  ->orWhereNull('dateMiseEnOeuvre');
+                            })->count()
+                    }}
+                </div>
+            </div>
+            <i class="fas fa-spinner kpi-icon"></i>
+        </div>
+    </div>
+
+    <!-- Utilisateurs -->
+    <div class="col-12 col-md-3">
+        <div class="kpi-card kpi-info">
+            <div>
+                <div class="kpi-title">Utilisateurs</div>
+                <div class="kpi-value">
+                    {{ \App\User::count() }}
+                </div>
+            </div>
+            <i class="fas fa-users kpi-icon"></i>
+        </div>
+    </div>
 
 </div>
 
@@ -314,7 +360,7 @@
     </div>
     <div class="col-12 col-md-6">
         <div class="dashboard-card p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
-            <canvas id="doughnut-chart" style="width: 100%; height: 100%;"></canvas>
+            <canvas id="doughnut-chart-stats" style="width: 100%; height: 100%;"></canvas>
         </div>
     </div>
 </div>
@@ -335,7 +381,7 @@
     <div class="col-12">
         <div class="dashboard-card p-3 rounded" style="min-height: 400px; background: #f8f9fa;">
             <div class="text-center mb-4">
-                <h4>Projets par nature et phase d'avancement</h4>
+                <h4>Projets par nature et phase d\'avancement</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-sm table-bordered table-hover align-middle">
@@ -556,7 +602,9 @@ $(document).ready(function(){
     ];
 
     const dataValues = {!! json_encode(array_values($etats)) !!};
-    const ctx = document.getElementById("doughnut-chart").getContext("2d");
+    const doughnutEl = document.getElementById("doughnut-chart");
+    if (!doughnutEl) return;
+    const ctx = doughnutEl.getContext("2d");
 
     const softDoughnut = new Chart(ctx, {
         type: 'doughnut',
@@ -613,7 +661,7 @@ $(document).ready(function(){
                 },
                 title: {
                     display: true,
-                    text: "Projets par phase d'avancement",
+                    text: "Projets par nature et phase d'avancement",
                     font: {
                         family: "Nunito",
                         size: 18,
@@ -630,7 +678,9 @@ $(document).ready(function(){
 </script>
 
 <script>
-new Chart(document.getElementById("trending-bar-chart"), {
+var trendingBarEl = document.getElementById("trending-bar-chart");
+if (trendingBarEl) {
+new Chart(trendingBarEl, {
                 type: 'bar',
                 data: {
                   labels: {!! json_encode(array_keys($month)) !!},
@@ -658,11 +708,13 @@ new Chart(document.getElementById("trending-bar-chart"), {
                   }
                 }
             });
-
+}
 
   </script>
 <script>
-var ctx = document.getElementById("mychart").getContext('2d');
+var mychartEl = document.getElementById("mychart");
+if (mychartEl) {
+var ctx = mychartEl.getContext('2d');
 
 // Create gradient fills
 var gradientAcheve = ctx.createLinearGradient(0, 0, 0, 400);
@@ -747,7 +799,257 @@ var myChart = new Chart(ctx, {
     },
     options: options
 });
+}
+</script>
 
+<script>
+// Stacked bar chart for user role (upw-role)
+var mychartUserEl = document.getElementById("mychart-user");
+if (mychartUserEl) {
+var ctxUser = mychartUserEl.getContext('2d');
+
+// Create gradient fills
+var gradientAcheveUser = ctxUser.createLinearGradient(0, 0, 0, 400);
+gradientAcheveUser.addColorStop(0, '#4D95FE');
+gradientAcheveUser.addColorStop(1, '#0068FE');
+
+var gradientRealisationUser = ctxUser.createLinearGradient(0, 0, 0, 400);
+gradientRealisationUser.addColorStop(0, '#FDC90A');
+gradientRealisationUser.addColorStop(1, '#FFD84D');
+
+var gradientNonLanceUser = ctxUser.createLinearGradient(0, 0, 0, 400);
+gradientNonLanceUser.addColorStop(0, '#DEE2E6');
+gradientNonLanceUser.addColorStop(1, '#E9ECEF');
+
+var dataUser = [{
+    label: 'Achevé',
+    backgroundColor: gradientAcheveUser,
+    data: {!! json_encode(array_values($ratio['A'])) !!}
+}, {
+    label: 'Réalisation',
+    backgroundColor: gradientRealisationUser,
+    data: {!! json_encode(array_values($ratio['R'])) !!}
+}, {
+    label: 'Non-Lancé',
+    backgroundColor: gradientNonLanceUser,
+    data: {!! json_encode(array_values($ratio['NL'])) !!}
+}];
+
+var optionsUser = {
+    maintainAspectRatio: false,
+    responsive: true,
+    legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+            fontColor: "#212529",
+            boxWidth: 24,
+            fontFamily: 'Nunito, sans-serif'
+        }
+    },
+    title: {
+        display: true,
+        text: 'projet par nature et phase davencement ',
+        fontSize: 18,
+        fontColor: '#212529'
+    },
+    tooltips: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: '#343A40',
+        titleFontColor: '#fff',
+        bodyFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem, data) {
+                var type = data.datasets[tooltipItem.datasetIndex].label;
+                var value = parseInt(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
+                var total = data.datasets.reduce((sum, ds) => sum + parseInt(ds.data[tooltipItem.index]), 0);
+                var percentage = ((value / total) * 100).toFixed(1);
+                return type + " : " + value + " - " + percentage + " %";
+            }
+        }
+    },
+    scales: {
+        xAxes: [{
+            stacked: true,
+            gridLines: { display: true, color: '#DEE2E6' },
+            ticks: { fontColor: "#495057" }
+        }],
+        yAxes: [{
+            stacked: true,
+            gridLines: { display: true, color: '#DEE2E6' },
+            ticks: { fontColor: "#495057" }
+        }]
+    }
+};
+
+var myChartUser = new Chart(ctxUser, {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_keys($ratio['A'])) !!},
+        datasets: dataUser
+    },
+    options: optionsUser
+});
+}
+</script>
+
+<script>
+// Charts for SuperAdmin Role
+var mychartSuperEl = document.getElementById("mychart-super");
+if (mychartSuperEl) {
+var ctxSuper = mychartSuperEl.getContext('2d');
+
+var gradientAcheveSuper = ctxSuper.createLinearGradient(0, 0, 0, 400);
+gradientAcheveSuper.addColorStop(0, '#4D95FE');
+gradientAcheveSuper.addColorStop(1, '#0068FE');
+
+var gradientRealisationSuper = ctxSuper.createLinearGradient(0, 0, 0, 400);
+gradientRealisationSuper.addColorStop(0, '#FDC90A');
+gradientRealisationSuper.addColorStop(1, '#FFD84D');
+
+var gradientNonLanceSuper = ctxSuper.createLinearGradient(0, 0, 0, 400);
+gradientNonLanceSuper.addColorStop(0, '#DEE2E6');
+gradientNonLanceSuper.addColorStop(1, '#E9ECEF');
+
+var dataSuper = [{
+    label: 'Achevé',
+    backgroundColor: gradientAcheveSuper,
+    data: {!! json_encode(array_values($ratio['A'])) !!}
+}, {
+    label: 'Réalisation',
+    backgroundColor: gradientRealisationSuper,
+    data: {!! json_encode(array_values($ratio['R'])) !!}
+}, {
+    label: 'Non-Lancé',
+    backgroundColor: gradientNonLanceSuper,
+    data: {!! json_encode(array_values($ratio['NL'])) !!}
+}];
+
+var optionsSuper = {
+    maintainAspectRatio: false,
+    responsive: true,
+    legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+            fontColor: "#212529",
+            boxWidth: 24,
+            fontFamily: 'Nunito, sans-serif'
+        }
+    },
+    title: {
+        display: true,
+        text: 'Projets par nature et phase d\'avancement',
+        fontSize: 18,
+        fontColor: '#212529'
+    },
+    tooltips: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: '#343A40',
+        titleFontColor: '#fff',
+        bodyFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem, data) {
+                var type = data.datasets[tooltipItem.datasetIndex].label;
+                var value = parseInt(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
+                var total = data.datasets.reduce((sum, ds) => sum + parseInt(ds.data[tooltipItem.index]), 0);
+                var percentage = ((value / total) * 100).toFixed(1);
+                return type + " : " + value + " - " + percentage + " %";
+            }
+        }
+    },
+    scales: {
+        xAxes: [{
+            stacked: true,
+            gridLines: { display: true, color: '#DEE2E6' },
+            ticks: { fontColor: "#495057" }
+        }],
+        yAxes: [{
+            stacked: true,
+            gridLines: { display: true, color: '#DEE2E6' },
+            ticks: { fontColor: "#495057" }
+        }]
+    }
+};
+
+var myChartSuper = new Chart(ctxSuper, {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_keys($ratio['A'])) !!},
+        datasets: dataSuper
+    },
+    options: optionsSuper
+});
+}
+
+// Doughnut chart for SuperAdmin
+var doughnutSuperEl = document.getElementById("doughnut-chart-super");
+if (doughnutSuperEl) {
+    const pastelColorsSuper = ['#A8D5BA', '#FFE1A8', '#A8CFE2', '#F4B6C2', '#D3C4F3'];
+    const dataValuesSuper = {!! json_encode(array_values($etats)) !!};
+    const ctxDoughnutSuper = doughnutSuperEl.getContext("2d");
+
+    new Chart(ctxDoughnutSuper, {
+        type: 'doughnut',
+        data: {
+            labels: ["Études", "Procédures", "Réalisation", "Non-Lancés", "Achevés"],
+            datasets: [{
+                data: dataValuesSuper,
+                backgroundColor: pastelColorsSuper,
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverOffset: 20,
+                borderRadius: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                easing: 'easeOutQuart'
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 15,
+                        font: { family: 'Nunito', size: 13, weight: '500', color: '#333' }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    titleFont: { family: 'Nunito', size: 14, weight: '600' },
+                    bodyFont: { family: 'Nunito', size: 13 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const value = tooltipItem.raw;
+                            const total = tooltipItem.chart._metasets[tooltipItem.datasetIndex].total;
+                            const percent = ((value / total) * 100).toFixed(1);
+                            return `${tooltipItem.label}: ${value} (${percent}%)`;
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Projets par phase d'avancement",
+                    font: { family: "Nunito", size: 18, weight: "600" },
+                    color: "#333",
+                    padding: { top: 15, bottom: 20 }
+                }
+            }
+        }
+    });
+}
 </script>
 
   <script>

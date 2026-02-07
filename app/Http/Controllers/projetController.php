@@ -13,7 +13,7 @@ use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Str;
 class projetController extends Controller
 {
     public function __construct()
@@ -432,6 +432,7 @@ class projetController extends Controller
             ->with(['retards' => $retards, 'id' => $id]);
     }
 
+    
     public function storeRetard(Request $request, $id)
     {
 

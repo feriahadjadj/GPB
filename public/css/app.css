@@ -2725,8 +2725,8 @@ fieldset:disabled a.btn {
 
 .btn-primary {
     color: #fff;
-    background-color: #3490dc;
-    border-color: #3490dc
+    background-color: #4D95FE;
+    border-color: #4D95FE
 }
 
 .btn-primary:hover {
@@ -2738,15 +2738,15 @@ fieldset:disabled a.btn {
 .btn-primary.focus,
 .btn-primary:focus {
     color: #fff;
-    background-color: #227dc7;
-    border-color: #2176bd;
+    background-color: #4D95FE;
+    border-color: #4D95FE;
     box-shadow: 0 0 0 .2rem rgba(82, 161, 225, .5)
 }
 
 .btn-primary.disabled,
 .btn-primary:disabled {
     color: #fff;
-    background-color: #3490dc;
+    background-color: #4D95FE;
     border-color: #3490dc
 }
 
@@ -11004,9 +11004,9 @@ tbody {
 }
 
 .back {
-    font-size: 3em;
+    font-size: 2em;
     margin: 20px 0 0 15px;
-    color: rgba(0, 60, 113, 1)
+    color:#4D95FE    
 }
 
 .back:hover {
