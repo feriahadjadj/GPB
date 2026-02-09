@@ -60,8 +60,13 @@
 
                                         <!--     only supeer admin    can edit               -->
 
-                                        @can('edit-users')
-                                        <a><button type="button" data-toggle="modal" data-target="#{{$u->id}}" class="btn edit">Modifier</button></a>
+                                 @can('edit-users')
+  <i class="fas fa-edit edit-icon"
+   data-toggle="modal"
+   data-target="#{{$u->id}}"
+   style="color: #FDC90A; font-size: 20px; cursor: pointer;">
+</i>
+
 
                                         <!--Modifier Modal -->
                                         <div id="{{$u->id}}" class="modal " role="dialog" >
@@ -140,7 +145,14 @@
 
                                         <form action="{{route('admin.users.destroy',$u )}}" method="POST" class="float-left">
                                             @csrf {{method_field('DELETE')}}
-                                            <button onclick="return confirm('Etes vous sur de vouloir supprimer l\'utilisateur {{$u->name}}?')" type="submit" class="btn delete " style="margin-right: 4px">Supprimer</button>
+                                      <button
+    type="submit"
+    onclick="return confirm('Etes vous sur de vouloir supprimer l\'utilisateur {{ $u->name }} ?')"
+    class="btn-delete-red"
+    title="Supprimer">
+    <i class="fas fa-trash delete-icon"></i>
+</button>
+
                                         </form>
                                         @endcan
                                     </div>

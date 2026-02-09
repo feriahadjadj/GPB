@@ -55,7 +55,14 @@ class HomeController extends Controller
             $year = Carbon::today()->year;
 
         }
+      // ✅ NEW: amountKey (for finance chart)
+          $allowedAmountKeys = ['montantAlloue', 'montantEC', 'montantPC'];
 
+         $amountKey = request()->input('amountKey', 'montantAlloue'); // default
+
+          if (!in_array($amountKey, $allowedAmountKeys, true)) {
+          $amountKey = 'montantAlloue';
+        }
         $month = ['janvier' => 'jan', 'février' => 'feb', 'mars' => 'march', 'avril' => 'apr', 'mai' => 'may', 'juin' => 'jun', 'juillet' => 'jul', 'août' => 'aug', 'septembre' => 'sep', 'octobre' => 'oct', 'novembre' => 'nov', 'décembre' => 'dec'];
 
         if (Auth::user()->roles->contains('name', 'superA')) {
@@ -69,9 +76,10 @@ class HomeController extends Controller
             $this->notificationUPW(Auth::user(), 25);
 
         }
-
+       $amountKey = request()->input('amount', 'alloue');
+       $financeByNature = $this->financeByNature($id, $year, $amountKey);
         //dd($this->mapData($year));
-
+       
         return view('home')->with([
 
             'id' => $id,
@@ -81,8 +89,9 @@ class HomeController extends Controller
             'bar' => $this->getBarChartInfo($id, $year),
             'ratio' => $this->getDeliverRatio($id, $year),
             'table' => $this->tableData($id, $year),
-            'map'=>$this->mapData($year)
-
+            'map'=>$this->mapData($year),
+            'amountKey' => $amountKey,
+            'financeByNature' => $financeByNature 
         ]);
     }
 
@@ -382,5 +391,47 @@ class HomeController extends Controller
         return $r;
 
     }
+public function financeByNature($id, $year, $amountKey)
+{
+    $allowed = ['montantAlloue', 'montantEC', 'montantPC'];
+    if (!in_array($amountKey, $allowed, true)) {
+        $amountKey = 'montantAlloue';
+    }
 
+    // ✅ base query: all projects
+    $q = \App\Projet::query();
+
+    // ✅ apply wilaya filter only if a real id is provided
+    if (!empty($id) && $id !== 'all' && $id !== 'undefined') {
+        $q->where('user_id', $id);
+    }
+
+    // ✅ apply same year logic you use elsewhere
+    $q->where(function ($x) use ($year) {
+        $x->whereYear('dateMiseEnOeuvre', $year)
+          ->orWhereNull('dateMiseEnOeuvre');
+    });
+
+    $q->where(function ($x) use ($year) {
+        $x->whereYear('odsEtude', '<=', $year)
+          ->orWhere(function ($y) use ($year) {
+              $y->whereNull('odsEtude')
+                ->whereYear('created_at', '=', $year);
+          });
+    });
+
+    // ✅ group by nature and sum the chosen amount
+    $rows = $q->selectRaw("nature, SUM($amountKey) as total")
+              ->groupBy('nature')
+              ->orderBy('nature')
+              ->get();
+
+    // ✅ return as associative array: ['Construction' => 123, ...]
+    $result = [];
+    foreach ($rows as $r) {
+        $result[$r->nature] = (float) ($r->total ?? 0);
+    }
+
+    return $result;
+}
 }

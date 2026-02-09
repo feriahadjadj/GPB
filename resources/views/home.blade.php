@@ -133,42 +133,13 @@
         font-size: 38px;
     }
 }
+
 </style>
 
 @can('edit-projet')
 
 <a href="{{url()->previous()}}" class="btn back"><i class="fas fa-arrow-circle-left"></i></a>
 
-
-
-
-
-
-<div class="row justify-content-center">
-
-
- <section class="features-icons col-md-6   text-center">
-    <div class="container accueil">
-      <div class="row justify-content-center">
-        @can('manage-users')
-        <div class="col-lg-6">
-          <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
-            <a href="{{ route('admin.users.index') }}" >
-            <div class="features-icons-icon d-flex">
-             
-          </div>
-        </div>
-        @endcan
-
-
-         <div class="col-lg-6">
-          <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
-            <a href="{{ route('projet.gestionprojets',['id'=>Auth::user()->id,'finance'=>'tout','year'=>Carbon\Carbon::today()->year]) }}" >
-           
-
-      </div>
-    </div>
-  </section>
 
   @if(Auth::user()->hasRole('superA'))
   <section class="col-md-12 section-chart">
@@ -208,18 +179,7 @@
 
   <section class="col-md-12 section-chart">
       <div class="form-inline mb-3" style="display: flex">
-        <div class="form-group " style="margin: 0 0 auto auto ">
-            <label for="wilaya" > <strong>Wilaya</strong>  </label>
-           <select name="wilaya" id="wilaya" class="wilaya form-control ">
-
-               @foreach (App\User::all() as $user) @if($user->roles->contains('name','user'))
-
-               <option value="{{$user->id}}">{{$user->name}}</option>
-               @endif @endforeach
-
-           </select>
-
-          </div>
+        
       </div>
 
       <!-- Charts Row for User Role -->
@@ -332,7 +292,7 @@
 <div class="row g-3 mb-3 align-items-end">
     <div class="col-12 col-md-6 col-lg-3">
         <label for="wilaya"><strong>Wilaya</strong></label>
-        <select name="wilaya" id="wilaya" class="form-control">
+        <select name="wilaya" id="wilaya-stats" class="form-control">
             <option value="all">Tous les UPWs</option>
             @foreach (App\User::all() as $user)
                 @if($user->roles->contains('name','user'))
@@ -343,14 +303,47 @@
     </div>
     <div class="col-12 col-md-6 col-lg-3">
         <label for="year"><strong>Année</strong></label>
-        <select name="year" id="year" class="form-control">
+        <select name="year" id="year-stats" class="form-control">
             @for ($i = (int) Carbon\Carbon::today()->year; $i > (int) Carbon\Carbon::today()->year - 5; $i--)
                 <option value="{{$i}}">{{$i}}</option>
             @endfor
         </select>
     </div>
 </div>
+<!-- Finance Chart Controls (ADMIN ONLY) -->
+<div class="row g-3 mb-3 align-items-end">
+    <div class="col-12 col-md-6 col-lg-6">
+        <label><strong>Montant (Finance)</strong></label>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; padding-top:6px;">
+            <label style="display:flex; align-items:center; gap:6px; margin:0;">
+                <input type="radio" name="amount_type" value="montantAlloue" checked>
+                Montant alloué
+            </label>
 
+            <label style="display:flex; align-items:center; gap:6px; margin:0;">
+                <input type="radio" name="amount_type" value="montantEC">
+                Montant des engagements cumulés
+            </label>
+
+            <label style="display:flex; align-items:center; gap:6px; margin:0;">
+                <input type="radio" name="amount_type" value="montantPC">
+                Montant des paiements cumulés
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Finance Chart (ADMIN ONLY) -->
+<div class="row g-3 mb-3">
+    <div class="col-12">
+        <div class="dashboard-card p-3 rounded" style="min-height: 380px; background: #f8f9fa;">
+            <canvas id="finance-by-nature-chart" style="width: 100%; height: 100%;"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+console.log("financeByNature data =>", @json($financeByNature ?? null));
+</script>
 <!-- First Row: Stacked Bar Chart + Pie Chart -->
 <div class="row g-3 mb-3">
     <div class="col-12 col-md-6">
@@ -582,7 +575,14 @@ Chart.register({
 </script>
 <script>
 $(document).ready(function(){
+$("#wilaya-stats").val('{{$id}}');
+$("#year-stats").val('{{$year}}');
 
+$("#wilaya-stats, #year-stats").change(function () {
+    var selectedUpw = $("#wilaya-stats").val();
+    var yy = $("#year-stats").val();
+    location.href = "{{ route('home') }}" + "?id=" + selectedUpw + "&year=" + yy;
+});
     // Filter handling
     $("#wilaya").val('{{$id}}');
     $("#year").val('{{$year}}');

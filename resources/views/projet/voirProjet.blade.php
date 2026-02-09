@@ -127,6 +127,8 @@
     </div>
 
 </div>
+
+@can('view-project-history')
 <!-- HISTORIQUE DES MODIFICATIONS -->
 <div class="page-container mt-4">
     <h2>Historique des modifications</h2>
@@ -142,7 +144,8 @@
                     <th>Détail de la modification</th>
                 </tr>
             </thead>
-           @forelse($histories as $h)
+            <tbody>
+   @forelse($histories as $h)
 <tr>
     <td>{{ \Carbon\Carbon::parse($h->created_at)->format('d-m-Y H:i') }}</td>
     <td>
@@ -154,26 +157,35 @@
         'odsEtude' => 'ODS Etude',
         'odsRealisation' => 'ODS Réalisation',
         'dateReception' => 'Date réception',
-        'dateMiseEnOeuvre' => 'Date mise en service',
+        'montantAlloue' => 'MontantAlloue',
+         'montantEC' => 'Montant des engagements cumulés',
+          'montantPC' => 'Montant des paiements cumulés',
+           'etatPhysique' => 'Etat Physique',
+            'tauxA' => 'Taux avancement',
+             'observation' => 'Observation'
+              
     ];
-@endphp
+  @endphp
 
-<strong>{{ $labels[$h->field] ?? $h->field }}</strong> modifié de
+  <strong>{{ $labels[$h->field] ?? $h->field }}</strong> modifié de
         <span class="old-value">{{ $h->old_value ?? '-' }}</span>
         →
         <span class="new-value">{{ $h->new_value ?? '-' }}</span>
     </td>
-</tr>
-@empty
-<tr>
+    </tr>
+     @empty
+     <tr>
     <td colspan="2" style="text-align:center; color:#6b7280;">
         Aucun historique pour ce projet.
     </td>
-</tr>
-@endforelse
+      </tr>
+     @endforelse 
+     </tbody>
         </table>
     </div>
 </div>
+@endcan
+ 
 
 <!-- Modal for Editing Project -->
 <div id="myModal" class="modal-overlay">

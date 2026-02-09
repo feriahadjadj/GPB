@@ -1876,7 +1876,7 @@ pre code {
 .table-primary,
 .table-primary>td,
 .table-primary>th {
-    background-color: #c6e0f5
+    background-color:#FFFF
 }
 
 .table-primary tbody+tbody,
@@ -1887,12 +1887,12 @@ pre code {
 }
 
 .table-hover .table-primary:hover {
-    background-color: #b0d4f1
+    background-color:#FFFF
 }
 
 .table-hover .table-primary:hover>td,
 .table-hover .table-primary:hover>th {
-    background-color: #b0d4f1
+    background-color: #FFFF
 }
 
 .table-secondary,
@@ -4638,7 +4638,7 @@ input[type=submit].btn-block {
     margin-left: 30px;
     padding-right: 0;
     padding-left: 0;
-    color: #282529
+    color: #E9ECEF
 }
 
 .navbar-nav .dropdown-menu {
@@ -10337,7 +10337,7 @@ a.text-dark:hover {
 }
 
 .edit {
-    background-color: rgba(2, 93, 166, 1);
+    background-color:  #4D95FE ;
     color: #fff
 }
 
@@ -11006,7 +11006,8 @@ tbody {
 .back {
     font-size: 2em;
     margin: 20px 0 0 15px;
-    color:#4D95FE    
+    color:#4D95FE 
+
 }
 
 .back:hover {
@@ -11165,3 +11166,45 @@ tbody {
   .labelFS{
     font-size: 1.0rem;
   }
+  .title-yellow {
+    color: #FDC90A;
+}
+.btn-delete-red {
+    background: transparent !important;
+    border: none !important;
+    padding: 6px;
+    cursor: pointer;
+}
+
+.btn-delete-red .delete-icon {
+    color: #ef4444 !important; /* FORCE RED */
+    font-size: 18px;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-delete-red:hover .delete-icon {
+    color: #b91c1c !important;
+    transform: scale(1.15);
+}
+
+.btn-delete-red:focus,
+.btn-delete-red:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.badge-blink {
+    background-color: #dc3545; /* red background */
+    color: #fff; /* white text */
+    font-size: 0.7rem;
+    padding: 0.1rem 0.25rem;
+    border-radius: 0.8rem;
+    animation: blink 1s infinite;
+    z-index: 10;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
+}
+ 

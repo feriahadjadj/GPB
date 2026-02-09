@@ -14,7 +14,7 @@ class ProjectHistory extends Model
         'action',
         'field',
         'old_value',
-        'new_value',
+        'new_value'
     ];
 
     public function projet()

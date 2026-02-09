@@ -86,7 +86,7 @@ body::before {
 .login-card {
   position: relative;
   z-index: 1;
-  width: 600px;
+  width: 400px;
   background: rgba(255, 255, 255, 0.95);
   padding: 50px 40px;
   border-radius: 20px;

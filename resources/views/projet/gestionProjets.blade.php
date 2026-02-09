@@ -283,14 +283,38 @@ body {
             @can('upw-role')
                 <a href="{{ route('projet.create') }}" class="btn-primary">+ Nouveau projet</a>
             @endcan
-            @can('manage-users')
-                <button class="btn-secondary" onclick="printDiv('content')">Imprimer</button>
-            @endcan
-        </div>
+  @can('manage-users')
+    <button class="btn-secondary" 
+            onclick="printDiv('content')" 
+            style="background-color: #4D95FE; color:FFFFF; border: none; 
+                   padding: 5px 10px; font-size: 15px;">
+        Imprimer
+    </button>
+    
+@endcan
+</div>
     </div>
 
     {{-- ================= FILTER ================= --}}
     <div class="filter-bar">
+        @can('manage-users')
+<div class="form-group">
+    <label><strong>Wilaya</strong></label>
+    <select name="wilaya" id="wilaya" class="select-filtre form-control">
+        @foreach (App\User::all() as $user)
+            @if($user->roles->contains('name','user'))
+                <option value="{{ $user->id }}"
+                    {{ $user->id == ($id ?? auth()->id()) ? 'selected' : '' }}>
+                    {{ $user->name }}
+                </option>
+            @endif
+        @endforeach
+    </select>
+    
+</div>
+@endcan
+
+
         <div class="form-group">
             <label><strong>Financement</strong></label>
             <select name="finance" id="finance" class="select-filtre form-control">
@@ -311,6 +335,21 @@ body {
         </div>
     </div>
 
+     {{-- DUPW / RECAP (TOUJOURS À LA FIN) --}}
+    @can('edit-users')
+    <div class="form-group" style="margin-left:auto">
+        <label><strong>Vue</strong></label>
+        <select name="select-recap" id="select-recap" class="form-control">
+            <option value="DUPW">DUPW</option>
+            <option value="1">Récap 1</option>
+            <option value="2">Récap 2</option>
+            <option value="3">Récap 3</option>
+            <option value="4">Récap 4</option>
+        </select>
+    </div>
+    @endcan
+
+</div>
     {{-- ================= TABS ================= --}}
     <div class="tabs-pro">
         @foreach($projetsFN as $i=>$type)
@@ -333,13 +372,20 @@ body {
 
             {{-- KPI --}}
             <div class="kpi-row">
-                <div class="kpi"><span>Total projets</span><strong>{{ $total }}</strong></div>
-<div class="kpi">
-    <span>Montant alloué (DZD)</span>
-    <strong>{{ number_format($alloue, 0, ',', ' ') }} </strong>
+    <div class="kpi" style="background-color: #fff7e6;">
+        <span>Total projets</span>
+        <strong>{{ $total }}</strong>
+    </div>
+    <div class="kpi" style="background-color: #fff7e6;">
+        <span>Montant alloué (DZD)</span>
+        <strong>{{ number_format($alloue, 0, ',', ' ') }} </strong>
+    </div>
+    <div class="kpi" style="background-color: #fff7e6;">
+        <span>Taux consommation (%)</span>
+        <strong>{{ $taux }} </strong>
+    </div>
 </div>
-                <div class="kpi"><span>Taux consommation (%)</span><strong>{{ $taux }} </strong></div>
-            </div>
+
 
             {{-- TABLE --}}
             <div class="table-wrapper">
@@ -448,7 +494,7 @@ const projects = [
 document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
         btn.classList.add('active');
         document.getElementById(btn.dataset.tab).classList.add('active');
     });
@@ -476,13 +522,22 @@ function closeModal(){
     document.getElementById('projectModal').style.display = 'none';
 }
 
-// FILTER CHANGE
+// FILTER CHANGE FOR WILAYA, FINANCE, YEAR
 $(".select-filtre").change(function() {
     var w = $('#wilaya').val() ?? '{{$id}}';
     var f = $('#finance').val();
     var y = $('#year').val();
     location.href = "/projet/gestionprojets/"+w+"/"+f+"/"+y;
 });
-</script>
 
+// FILTER CHANGE FOR RECAP VIEW
+$("#select-recap").change(function() {
+    var recap = $(this).val();
+    var w = $('#wilaya').val() ?? '{{$id}}';
+    var f = $('#finance').val();
+    var y = $('#year').val();
+    location.href = "/projet/gestionprojets/recap/"+recap+"/"+w+"/"+f+"/"+y;
+});
+</script>
 @endsection
+

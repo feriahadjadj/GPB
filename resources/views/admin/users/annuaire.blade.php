@@ -7,20 +7,23 @@
 
             <div class="card"  style="margin-top:32px">
                 <div class="card-header">
-                    <h4 class="float-left" style="margin-top:8px"> Annuaire</h4>
+                    <h4 class="float-left" style="margin-top:8px; color:#4D95FE;">
+    Annuaire
+</h4>
+
                 </div>
 
                 <div class="card-body ">
 
                     <table id="userTable" class="table table-striped    " style="width:100%">
-                        <thead>
-                            <tr>
-                                <th scope="col">Nom</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Tel</th>
+                       <thead>
+    <tr>
+        <th scope="col" style="color:#FDC90A;font-weight:700;">Nom</th>
+        <th scope="col" style="color:#FDC90A;font-weight:700;">Email</th>
+        <th scope="col" style="color:#FDC90A;font-weight:700;">Tel</th>
+    </tr>
+</thead>
 
-                            </tr>
-                        </thead>
                         <tbody>
                             @foreach ($users as $u)
 

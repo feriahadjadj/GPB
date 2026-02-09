@@ -57,7 +57,9 @@ class AuthServiceProvider extends ServiceProvider
            return $user->isUser('djemmal@namane.dz');
 
         });
-
+        Gate::define('view-project-history', function($user){
+            return $user->hasRole('superA');
+        });
         //
     }
 }

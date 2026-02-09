@@ -168,9 +168,14 @@ class projetController extends Controller
         'delaiR',
         'odsEtude',
         'odsRealisation',
-        'dateReception',
-        'dateMiseEnOeuvre',
-        // add more later if needed
+        'dateReception',                 
+       'montantAlloue', 
+        'montantEC', 
+        'montantPC', 
+        'etatPhysique',
+        'tauxA', 
+        'observation'
+        // add more later if needed,
     ];
     $before = $projet ? $projet->only($tracked) : [];
 

@@ -810,13 +810,17 @@ body {
             <input type="text" placeholder="Rechercher…">
         </div>
 
-        <!-- Notifications -->
-        <a href="{{ route('projet.notifications') }}" class="icon-btn">
-            <i class="fa fa-bell"></i>
-<span class="badge" style="background-color: red; color: white;">
-    {{ App\User::getNbNotifications() }}
-</span>
-        </a>
+ <!-- Notifications -->
+<a href="{{ route('projet.notifications') }}" class="icon-btn position-relative">
+    <i class="fa fa-bell"></i>
+
+    @if(App\User::getNbNotifications() > 0)
+        <span class="badge badge-blink position-absolute" style="top:4px; left:4px;">
+            {{ App\User::getNbNotifications() }}
+        </span>
+    @endif
+</a>
+
 
         <!-- User Menu -->
         

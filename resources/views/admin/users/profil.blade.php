@@ -26,21 +26,26 @@
                 <div class="card-header" style="border-radius:15px 15px 0 0 ; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">Information du compte </div>
 
                 <ul class="list-group" >
-                    <li class="list-group-item" style="box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
-                        <label class="col-md-6 text-md-center"><strong>Nom </strong></label>
+                    <li class="list-group-item" style="box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)color ;">
+                      <label class="col-md-6 text-md-center title-yellow"><strong>Nom</strong></label>
+
                         <label class="col-md-4 text-md-left">{{$user->name}}</label>
                     </li>
                     <li class="list-group-item" style="box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
-                        <label class="col-md-6 text-md-center"><strong> E-mail </strong></label>
+                        <label class="col-md-6 text-md-center title-yellow"><strong>E-mail</strong></label>
+
                         <label class="col-md-4 text-md-left">{{$user->email}}</label>
                     </li>
                     <li class="list-group-item" style="box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);">
-                        <label class="col-md-6 text-md-center"><strong> Tel</strong></label>
+
+                        <label class="col-md-6 text-md-center title-yellow"><strong>Tel</strong></label>
+
                         <label class="col-md-4 text-md-left"id="changerMotP" style="color:#025da6 "><strong><a data-toggle="modal" data-target="#modifieTel">{{$user->tel ?? 'Ajouter votre numero'}}</a></strong></label>
                     </li>
 
-                    <li class="list-group-item" style="border-radius: 0 0 15px 15px ;box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); ">
-                        <label class="col-md-6 text-md-center"><strong> Mot de passe </strong></label>
+                    <li class="list-group-item" style="border-radius: 0 0 15px 15px ;box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0,0,0,0.23); ">
+                        <label class="col-md-6 text-md-center title-yellow"><strong>Mot de passe </strong></label>
+
                         <label class="col-md-4 text-md-left" id="changerMotP" style="color:#025da6 "><strong><a data-toggle="modal" data-target="#modifiePassMod">changer mot de passe</a></strong></label>
 
                     </li>

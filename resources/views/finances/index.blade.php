@@ -88,9 +88,6 @@
                                                            </span> @enderror
                                                                 </div>
                                                             </div>
-
-
-
                                                             <button type="submit" class="btn btn-primary float-right">valider</button>
                                                         </form>
 

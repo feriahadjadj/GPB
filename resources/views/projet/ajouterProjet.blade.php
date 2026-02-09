@@ -12,7 +12,7 @@
         <!-- Card wrapper -->
         <div class="card shadow border-0 rounded-4">
             <!-- Card header with gradient -->
-            <div class="card-header text-white p-3" style="background: linear-gradient(90deg, #0068FE 0%, #4D95FE 100%); font-weight:600; font-size:1.25rem;">
+            <div class="card-header text-white p-3" style="background: linear-gradient(60deg, #0068FE 0%, #4D95FE 100%); font-weight:600; font-size:1.25rem;">
                 Nouveau Projet
             </div>
 
@@ -26,14 +26,7 @@
                     @include('projet.shared.projectForm')
 
                     <!-- Submit/reset buttons -->
-                    <div class="d-flex justify-content-end mt-4 gap-2">
-                        <button type="submit" class="btn btn-primary shadow-sm">
-                            <i class="fas fa-save"></i> Enregistrer
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary shadow-sm">
-                            <i class="fas fa-undo"></i> Réinitialiser
-                        </button>
-                    </div>
+                    
                 </form>
 
             </div>
