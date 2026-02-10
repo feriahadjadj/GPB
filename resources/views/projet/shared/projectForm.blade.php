@@ -202,14 +202,13 @@
 </div>
 
 <div class="form-group row">
-    <label class="col-sm-5   labelFS">Date de mise en service</label>
+    
     <div class="col-sm-7">
 
         <div class="row">
             <div class="col-sm-5">
 
-                <input type="date" min="2000-01-01" name="dateMiseEnOeuvre" class="form-control" autocomplete="off" value={!! $projet->dateMiseEnOeuvre ?? '' !!} >
-
+              
             </div>
 
         </div>

@@ -32,11 +32,15 @@
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item" onclick="openModal()">
-                                <i class="fas fa-pen"></i> Modifier le projet
-                            </button>
-                        </li>
-                        <li>
+            @can('upw-role')
+                <div class="header-actions">
+                  <div class="dropdown">
+                <button class="dropdown-item" onclick="openModal()">
+              <i class="fas fa-pen"></i> Modifier le projet
+             </button>
+            </li>
+             <li>
+         @endcan
                             <button class="dropdown-item" onclick="if(confirm('Etes vous sur de vouloir supprimer ce projet ?')) { window.location='{{route('projet.destroy',$projet->id)}}'; }">
                                 <i class="fas fa-trash"></i> Supprimer projet
                             </button>
@@ -229,7 +233,9 @@ document.addEventListener('keydown', function (e) {
         closeModal();
     }
 });
+
 </script>
+
 
 <script>
 

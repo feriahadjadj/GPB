@@ -268,6 +268,7 @@ body {
     font-size:12px;
     color:#6b7280;
 }
+
 </style>
 
 <div class="page-container">
@@ -285,7 +286,8 @@ body {
             @endcan
   @can('manage-users')
     <button class="btn-secondary" 
-            onclick="printDiv('content')" 
+            onclick="printAllProjects()"
+
             style="background-color: #4D95FE; color:FFFFF; border: none; 
                    padding: 5px 10px; font-size: 15px;">
         Imprimer
@@ -337,16 +339,37 @@ body {
 
      {{-- DUPW / RECAP (TOUJOURS À LA FIN) --}}
     @can('edit-users')
-    <div class="form-group" style="margin-left:auto">
-        <label><strong>Vue</strong></label>
-        <select name="select-recap" id="select-recap" class="form-control">
-            <option value="DUPW">DUPW</option>
-            <option value="1">Récap 1</option>
-            <option value="2">Récap 2</option>
-            <option value="3">Récap 3</option>
-            <option value="4">Récap 4</option>
-        </select>
-    </div>
+   <div class="form-group" style="margin-left:auto">
+    <label><strong>Vue</strong></label>
+    <select name="select-recap" id="select-recap" class="form-control">
+
+        <option value="DUPW"
+            {{ request()->is('projet/gestionprojets*') ? 'selected' : '' }}>
+            DUPW
+        </option>
+
+        <option value="1"
+            {{ request()->is('projet/recaps/1*') ? 'selected' : '' }}>
+            Récap 1
+        </option>
+
+        <option value="2"
+            {{ request()->is('projet/recaps/2*') ? 'selected' : '' }}>
+            Récap 2
+        </option>
+
+        <option value="3"
+            {{ request()->is('projet/recaps/3*') ? 'selected' : '' }}>
+            Récap 3
+        </option>
+
+        <option value="4"
+            {{ request()->is('projet/recaps/4*') ? 'selected' : '' }}>
+            Récap 4
+        </option>
+
+    </select>
+</div>
     @endcan
 
 </div>
@@ -494,7 +517,7 @@ const projects = [
 document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.dataset.tab).classList.add('active');
     });
@@ -522,22 +545,60 @@ function closeModal(){
     document.getElementById('projectModal').style.display = 'none';
 }
 
-// FILTER CHANGE FOR WILAYA, FINANCE, YEAR
+// FILTER CHANGE
 $(".select-filtre").change(function() {
     var w = $('#wilaya').val() ?? '{{$id}}';
     var f = $('#finance').val();
     var y = $('#year').val();
     location.href = "/projet/gestionprojets/"+w+"/"+f+"/"+y;
 });
+</script>
 
-// FILTER CHANGE FOR RECAP VIEW
-$("#select-recap").change(function() {
-    var recap = $(this).val();
-    var w = $('#wilaya').val() ?? '{{$id}}';
-    var f = $('#finance').val();
-    var y = $('#year').val();
-    location.href = "/projet/gestionprojets/recap/"+recap+"/"+w+"/"+f+"/"+y;
+<script>
+function printAllProjects() {
+
+    // hide filters / buttons
+    document.querySelectorAll('.filter-bar, .tabs-pro, .header-actions').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // show ALL tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('active');
+        tab.style.display = 'block';
+    });
+
+    // add header (same spirit as old version)
+    const header = document.createElement('div');
+    header.id = 'print-header';
+    header.innerHTML = `
+        <div style="margin-bottom:30px">
+            <img src="{{ asset('img/logo-head.png') }}" width="200">
+            <h3 style="margin-top:10px">
+                Liste des projets – Année {{ $year }}
+            </h3>
+        </div>
+    `;
+    document.querySelector('.page-container').prepend(header);
+
+    window.print();
+
+    // restore page
+    location.reload();
+}
+</script>
+<script>
+document.getElementById('select-recap')?.addEventListener('change', function () {
+    const recap = this.value;
+    const year  = document.getElementById('year').value;
+    const wilaya = document.getElementById('wilaya')?.value ?? '{{ auth()->id() }}';
+
+    if (recap === 'DUPW') {
+        window.location.href = `/projet/gestionprojets/${wilaya}/tout/${year}`;
+    } else {
+        window.location.href = `/projet/recaps/${recap}/tout/${year}`;
+    }
 });
 </script>
-@endsection
 
+@endsection

@@ -146,12 +146,12 @@
                                         <form action="{{route('admin.users.destroy',$u )}}" method="POST" class="float-left">
                                             @csrf {{method_field('DELETE')}}
                                       <button
-    type="submit"
-    onclick="return confirm('Etes vous sur de vouloir supprimer l\'utilisateur {{ $u->name }} ?')"
-    class="btn-delete-red"
-    title="Supprimer">
-    <i class="fas fa-trash delete-icon"></i>
-</button>
+                                        type="submit"
+                                        onclick="return confirm('Etes vous sur de vouloir supprimer l\'utilisateur {{ $u->name }} ?')"
+                                        class="btn-delete-red"
+                                        title="Supprimer">
+                                       <i class="fas fa-trash delete-icon"></i>
+                                           </button>
 
                                         </form>
                                         @endcan

@@ -169,6 +169,7 @@ body {
     }
 }
 
+
 /* ======================================================
    MAIN AREA
 ====================================================== */
@@ -567,6 +568,23 @@ body {
     height: 46px;
     margin-right: 12px;
 }
+/* Blinking animation */
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.blinking {
+    animation: blink 1s infinite;
+}
+
 
 /* SHOW */
 .dropdown.show {
@@ -810,15 +828,12 @@ body {
             <input type="text" placeholder="Rechercher…">
         </div>
 
- <!-- Notifications -->
-<a href="{{ route('projet.notifications') }}" class="icon-btn position-relative">
+   <!-- Notifications -->
+<a href="{{ route('projet.notifications') }}" class="icon-btn" id="notification-bell">
     <i class="fa fa-bell"></i>
-
-    @if(App\User::getNbNotifications() > 0)
-        <span class="badge badge-blink position-absolute" style="top:4px; left:4px;">
-            {{ App\User::getNbNotifications() }}
-        </span>
-    @endif
+    <span id="notification-badge" class="badge {{ App\User::getNbNotifications() > 0 ? 'blinking' : '' }}" style="background-color: red; color: white;">
+        {{ App\User::getNbNotifications() }}
+    </span>
 </a>
 
 
@@ -878,6 +893,7 @@ function toggleSidebar() {
     }
 
 </script>
+
 <script>
     window.setTimeout(function() {
       $(".alert").fadeTo(500, 0).slideUp(500, function(){
@@ -887,6 +903,7 @@ function toggleSidebar() {
   
   </script>
   <script>
+    
 function toggleAdminMenu() {
     const dropdown = document.querySelector('.user-menu .dropdown');
     dropdown.classList.toggle('show');
@@ -902,6 +919,22 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+<script>
+// Check if there are new notifications and add the blinking effect
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationBadge = document.getElementById('notification-badge');
+    const notificationBell = document.getElementById('notification-bell');
+    
+    // Check if there are new notifications and add blinking
+    if (parseInt(notificationBadge.textContent) > 0) {
+        notificationBadge.classList.add('blinking');
+    }
+
+    // When the notification bell is clicked, stop the blinking effect
+    notificationBell.addEventListener('click', function() {
+        notificationBadge.classList.remove('blinking');
+    });
+});
 
 </body>
 </html>
