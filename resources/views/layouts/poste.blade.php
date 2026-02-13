@@ -98,6 +98,23 @@ body {
     left: -280px;
 }
 
+.close-sidebar {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #CED4DA;
+    font-size: 24px;
+    cursor: pointer;
+    display: none;
+    z-index: 150;
+}
+
+.close-sidebar:hover {
+    color: #FFFFFF;
+}
+
 /* Header - same gradient as active nav item */
 .sidebar-header {
     height: 80px;
@@ -172,6 +189,10 @@ body {
 
     .sidebar-toggled .sidebar {
         left: 0;
+    }
+
+    .sidebar-toggled .close-sidebar {
+        display: block;
     }
 
     .topbar, main.content {
@@ -749,6 +770,10 @@ main.content {
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
+        <!-- Close button for mobile/scaled views -->
+        <button class="close-sidebar" onclick="toggleSidebar()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
 
         <!-- User Info (Sidebar Top) -->
         <div class="sidebar-user">
