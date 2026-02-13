@@ -11,7 +11,7 @@ class FinanceSeeder extends Seeder
      */
     public function run()
     {
-        Finance::truncate();
+        Finance::query()->delete();
         Finance::create(['name'=>'SUP']);
         Finance::create(['name'=>'FP']);
         Finance::create(['name'=>'BE']);

@@ -14,7 +14,7 @@ class NatureSeeder extends Seeder
     {
         //
 
-        Nature::truncate();
+        Nature::query()->delete();
         Nature::create(['name'=>'construction']);
         Nature::create(['name'=>'rehabilitation']);
         Nature::create(['name'=>'amenagement']);
