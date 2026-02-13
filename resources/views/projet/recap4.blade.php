@@ -85,8 +85,9 @@
 
 @endcan
 
-    <div class="tabs" style="padding-top: 0px;">
-        <div class="form-inline d-flex"  >
+<div class="container-fluid">
+    <div class="tabs" style="padding: 0px; height: auto; transform: none; left: auto;">
+        <div class="form-inline d-flex" style="margin-bottom: 20px; position: relative; z-index: 100;" >
 
 
             <div class="form-group" style="margin-left: auto;margin-right: 0;">
@@ -171,14 +172,9 @@
 
         </div>
 
-
-
-
+    </div>
 
 </div>
-
-
-<!------------------------------------------------------------------------------------->
 
 
 <script>

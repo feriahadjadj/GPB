@@ -10,7 +10,7 @@
     @media print{@page{size:landscape}}
 </style>
 
-<div class="container">
+<div class="container-fluid">
     @can('manage-users') @endcan
     <div class=" justify-content-center row">
      <!-- section 5 ----------------------------------------------->
@@ -60,7 +60,7 @@
                     </div>
 
                     <h3 class="recap-title img-logo" hidden>Récape des projets par WILAYA <span class="img-logo recap-title"  hidden>de l'année {{$year}}</span></h3>
-                        <table id="resultA" class="table resultA table-bordered" style="width: 80%">
+                        <table id="resultA" class="table resultA table-bordered" style="width: 100%">
 
                                                 <thead class="thead-dark">
 

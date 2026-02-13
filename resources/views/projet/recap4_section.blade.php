@@ -3,7 +3,7 @@
 
         {{-- <h2 class="recap-title float-left">{{$key}}</h2> --}}
 
-
+        <div class="table-responsive">
         <table id="resultA" class="table resultA table-bordered table-condensed">
             <thead class="thead-dark">
 
@@ -90,5 +90,6 @@
 
             </tbody>
         </table>
+        </div>
 
     </div>

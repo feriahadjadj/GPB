@@ -6,9 +6,9 @@
 
 @endcan
 
-<div class="container">
+<div class="container-fluid">
     @can('manage-users') @endcan
-    <div class="content justify-content-center row">
+    <div class="justify-content-center row">
 
         <!-- section 3----------------------------------------------->
 
@@ -54,7 +54,7 @@
             </div>
             <div class="row ">
                 <div class="justify-content-center col-lg-12 col-md-12">
-                    <div class="well" id="content" style="padding: 5px;">
+                    <div class="well table-responsive" id="content" style="padding: 5px;">
 
                         <table id="resultA" class="table resultA table-bordered table-condensed">
                             <thead class="thead-dark">

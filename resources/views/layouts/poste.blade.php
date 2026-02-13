@@ -23,9 +23,14 @@
 </head>
 
 <style>
-    .content {
-    margin-left: 300px; /* same as sidebar width */
+    main.content {
+    margin-left: 280px; /* same as sidebar width */
     padding: 24px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar-toggled main.content {
+    margin-left: 0;
 }
 
 /* ======================================================
@@ -86,6 +91,11 @@ body {
     flex-direction: column;
     font-family: 'Poppins', sans-serif;
     background-color: #212529; /* very dark base */
+    transition: left 0.3s ease;
+}
+
+.sidebar-toggled .sidebar {
+    left: -280px;
 }
 
 /* Header - same gradient as active nav item */
@@ -154,18 +164,18 @@ body {
     flex: 1;
 }
 
-/* Mobile collapse */
-@media (max-width: 992px) {
+/* Mobile and Small Laptop collapse */
+@media (max-width: 1200px) {
     .sidebar {
-        position: fixed;
         left: -280px;
-        top: 0;
-        z-index: 50;
-        transition: left 0.3s ease;
     }
 
-    .sidebar.open {
+    .sidebar-toggled .sidebar {
         left: 0;
+    }
+
+    .topbar, main.content {
+        margin-left: 0 !important;
     }
 }
 
@@ -207,7 +217,7 @@ body {
     border: none;
     font-size: 22px;
     cursor: pointer;
-    display: none;
+    display: block;
 }
 
 .page-title {
@@ -260,6 +270,12 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar-toggled .topbar {
+    margin-left: 0;
 }
 
 /* Left Section */
@@ -657,7 +673,7 @@ body {
 /* ======================================================
    CONTENT
 ====================================================== */
-.content {
+main.content {
     padding: 10px;
 }
 
@@ -689,7 +705,7 @@ body {
 /* ======================================================
    RESPONSIVE
 ====================================================== */
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
     .sidebar {
             position: fixed;      /* Fixes it on the screen */
 
@@ -721,8 +737,9 @@ body {
         display: none;
     }
 
-    .content {
+    main.content {
         padding: 20px;
+        margin-left: 0;
     }
 }
 </style>
@@ -857,7 +874,7 @@ body {
 
 <script>
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    document.querySelector('.app').classList.toggle('sidebar-toggled');
 }
 </script>
 <script src="{{ asset('dist/script.min.js')}}"></script>

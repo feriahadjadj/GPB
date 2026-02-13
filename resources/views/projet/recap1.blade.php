@@ -7,9 +7,9 @@
 @endcan
 
 
-<div class="container">
+<div class="container-fluid">
     @can('manage-users') @endcan
-    <div class="content justify-content-center row">
+    <div class="justify-content-center row">
 
 
 
@@ -66,7 +66,7 @@
 
             <div class="row ">
                 <div class="justify-content-center col-lg-12 col-md-12">
-                    <div class="well tableContainer" id="content" style="padding: 5px;" >
+                    <div class="well tableContainer table-responsive" id="content" style="padding: 5px;" >
 
                         <table id="resultA" class="table resultA table-bordered table-condensed scrollTable">
                             <thead class="thead-dark fixedHeader">
