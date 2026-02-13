@@ -13,3 +13,4 @@ yarn-error.log
 Dockerfile
 docker-compose.yml
 /docker-compose
+backup_new.bak
