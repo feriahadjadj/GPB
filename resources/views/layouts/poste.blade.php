@@ -165,7 +165,7 @@ body {
 }
 
 /* Mobile and Small Laptop collapse */
-@media (max-width: 1200px) {
+@media (max-width: 1600px) {
     .sidebar {
         left: -280px;
     }
@@ -705,17 +705,15 @@ main.content {
 /* ======================================================
    RESPONSIVE
 ====================================================== */
-@media (max-width: 1200px) {
+@media (max-width: 1600px) {
     .sidebar {
-            position: fixed;      /* Fixes it on the screen */
-
         position: fixed;
         left: -280px;
         top: 0;
         height: 100%;
     }
 
-    .sidebar.open {
+    .sidebar-toggled .sidebar {
         left: 0;
     }
 
