@@ -573,7 +573,7 @@ function printAllProjects() {
     header.id = 'print-header';
     header.innerHTML = `
         <div style="margin-bottom:30px">
-            <img src="{{ asset('img/logo-head.png') }}" width="200">
+            <img src="{{ asset('img/logo COPY.png') }}" width="200">
             <h3 style="margin-top:10px">
                 Liste des projets – Année {{ $year }}
             </h3>

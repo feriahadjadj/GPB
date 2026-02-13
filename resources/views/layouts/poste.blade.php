@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>GPB</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="{{ asset('img/logo.png')}}" />
+    <link rel="icon" href="{{ asset('img/logo.SVG')}}" />
 
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('simple-line-icons.css')}}" rel="stylesheet" type="text/css">
@@ -881,7 +881,7 @@ main.content {
         
 
         <!-- Logo Right-Aligned -->
-        <img src="{{ asset('img/LOGOAP.svg') }}" alt="Logo" class="topbar-logo">
+        <img src="{{ asset('img/LOGO copy.png') }}" alt="Logo" class="topbar-logo">
     </div>
 </header>
 
