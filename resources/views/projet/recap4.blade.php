@@ -139,7 +139,7 @@
 
 
             <!-- table nature construction tot ls wilaya -->
-            <div class="content">
+           
                 @foreach ($natures as $nat)
             <section id="{{$nat->id}}S">
                 <div class="img-logo" style ='width:100%;margin-bottom:60px' hidden>
@@ -159,22 +159,7 @@
                     </section>
                 @endforeach
 
-
-
-
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
+        
 </div>
 
 

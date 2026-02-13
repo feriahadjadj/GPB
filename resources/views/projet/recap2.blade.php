@@ -6,9 +6,20 @@
 
 @endcan
 
-<div class="container">
+<style>
+    .recap-title{
+        text-align: center;
+        margin: 15px 0 25px;
+        font-weight: 800;
+    }
+</style>
+
+<div class="container-fluid px-2 px-md-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-11 col-xxl-10">
     @can('manage-users') @endcan
-    <div class="content justify-content-center row">
+    <div class="row justify-content-center">
+        <div class="col-12">
 
         <!-- section 3----------------------------------------------->
 
@@ -53,10 +64,10 @@
 
             </div>
             <div class="row ">
-                <div class="justify-content-center col-lg-12 col-md-12">
-                    <div class="well" id="content" style="padding: 5px;">
+                <div class="col-12">
+                    <div class="well table-responsive" id="content" style="padding: 5px;">
 
-                        <table id="resultA" class="table resultA table-bordered table-condensed">
+                        <table id="resultA" class="table resultA table-bordered table-condensed w-100">
                             <thead class="thead-dark">
 
                                 <tr>
@@ -131,6 +142,9 @@
         </section>
 
     </div>
+    </div>
+    </div>
+  </div>
 
 </div>
 

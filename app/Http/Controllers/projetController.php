@@ -315,6 +315,7 @@ class projetController extends Controller
     }
 }
 
+
     //gestion des projets
 
     public function gestion(string $id, string $finance,string $year)

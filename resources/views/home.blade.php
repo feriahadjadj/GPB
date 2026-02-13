@@ -310,53 +310,9 @@
         </select>
     </div>
 </div>
-<!-- Finance Chart Controls (ADMIN ONLY) -->
-<div class="row g-3 mb-3 align-items-end">
-    <div class="col-12 col-md-6 col-lg-6">
-        <label><strong>Montant (Finance)</strong></label>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; padding-top:6px;">
-            <label style="display:flex; align-items:center; gap:6px; margin:0;">
-                <input type="radio" name="amount_type" value="montantAlloue" checked>
-                Montant alloué
-            </label>
 
-            <label style="display:flex; align-items:center; gap:6px; margin:0;">
-                <input type="radio" name="amount_type" value="montantEC">
-                Montant des engagements cumulés
-            </label>
 
-            <label style="display:flex; align-items:center; gap:6px; margin:0;">
-                <input type="radio" name="amount_type" value="montantPC">
-                Montant des paiements cumulés
-            </label>
-        </div>
-    </div>
-</div>
 
-<!-- Finance Chart (ADMIN ONLY) -->
-<div class="row g-3 mb-3">
-    <div class="col-12">
-        <div class="dashboard-card p-3 rounded" style="min-height: 380px; background: #f8f9fa;">
-            <canvas id="finance-by-nature-chart" style="width: 100%; height: 100%;"></canvas>
-        </div>
-    </div>
-</div>
-<script>
-console.log("financeByNature data =>", @json($financeByNature ?? null));
-</script>
-<!-- First Row: Stacked Bar Chart + Pie Chart -->
-<div class="row g-3 mb-3">
-    <div class="col-12 col-md-6">
-        <div class="dashboard-card p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
-            <canvas id="mychart" style="width: 100%; height: 100%;"></canvas>
-        </div>
-    </div>
-    <div class="col-12 col-md-6">
-        <div class="dashboard-card p-3 rounded" style="min-height: 350px; background: #f8f9fa;">
-            <canvas id="doughnut-chart-stats" style="width: 100%; height: 100%;"></canvas>
-        </div>
-    </div>
-</div>
 
 <!-- Second Row: Map + Legend + Trending Bar Chart -->
 <div class="row g-3 mb-3">
@@ -575,6 +531,13 @@ Chart.register({
 </script>
 <script>
 $(document).ready(function(){
+    $("#wilaya-super").change(function () {
+    var selectedUpw = $(this).val();
+    var yy = $("#year-stats").val() ?? "{{ date('Y') }}";
+
+    location.href = "{{ route('home') }}" + "?id=" + selectedUpw + "&year=" + yy;
+});
+
 $("#wilaya-stats").val('{{$id}}');
 $("#year-stats").val('{{$year}}');
 
@@ -583,15 +546,7 @@ $("#wilaya-stats, #year-stats").change(function () {
     var yy = $("#year-stats").val();
     location.href = "{{ route('home') }}" + "?id=" + selectedUpw + "&year=" + yy;
 });
-    // Filter handling
-    $("#wilaya").val('{{$id}}');
-    $("#year").val('{{$year}}');
-    $("select.wilaya, #year").change(function(){
-        var selectedUpw = $("#wilaya").val();
-        var yy = $("#year").val();
-        location.href = "{{ route('home') }}" + "?id=" + selectedUpw + "&year=" + yy;
-    });
-
+ 
     // Soft/pastel gradient palette
     const pastelColors = [
         '#A8D5BA', // soft green
