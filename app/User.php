@@ -89,5 +89,10 @@ class User extends Authenticatable
         return auth()->user()->unreadNotifications()->count() ;
     }
 
+    public function getDateFormat()
+    {
+        return 'Y-m-d H:i:s';
+    }
+
 
 }
