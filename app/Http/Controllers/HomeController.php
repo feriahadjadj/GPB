@@ -99,53 +99,53 @@ class HomeController extends Controller
     {
 
         foreach ($projets as $p) {
-            if ($p->etatPhysique != "A" && $p->avancement->first() && $p->user) {
-                $lastDate = Carbon::parse($p->avancement->first()->created_at);
+            if($p->etatPhysique !="A"){
+            $lastDate = Carbon::parse($p->avancement->first()['created_at']);
 
-                $diffDate = $lastDate->diffInDays(Carbon::now()) - $this->delayDays($p);
-                $text = 'L\'UPW ' . $p->user->name . ' n\'a pas mis a jour le projet ' . $p->designation . ' depuis ' . $lastDate->toDateString() . '.';
+            $diffDate = $lastDate->diffInDays(Carbon::now()) - $this->delayDays($p);
+            $text = 'L\'UPW ' . User::find($p->user_id)->name . ' n\'a pas mis a jour le projet ' . $p->designation . ' depuis ' . $lastDate->toDateString() . '.';
 
-                if ($diffDate >= $days) {
+            if ($diffDate >= $days) {
 
-                    /* if notifications exist deja*/
+                /* if notifications exist deja*/
 
-                    if (!$this->NotifExist($text)) {
+                if (!$this->NotifExist($text)) {
 
-                        // foreach ($users as $user) {
+                    // foreach ($users as $user) {
 
                         if ($user->roles->contains('name', 'superA') && $user->email != 'djemmal@namane.dz') { // compte super admin masequer
 
                             // $user->notify(new userNotification(Auth::user(), $p, 'Retard', $text));
-                            $user->notify(new userNotification($p->user, $p, 'Retard', $text));
+                            $user->notify(new userNotification(User::find($p->user_id), $p, 'Retard', $text));
 
                         }
-                        // }
-                    }
+                    // }
                 }
-                # code...
             }
+            # code...
+        }
         }
 
     }
 
     public function notificationUPW($user, $days)
     {
-        $projets = $user->projet;
+        $projets = $user->projet->all();
         foreach ($projets as $p) {
-            if ($p->etatPhysique != "A" && $p->avancement->first()) {
-                $lastDate = Carbon::parse($p->avancement->first()->created_at);
-                $diffDate = $lastDate->diffInDays(Carbon::now()) - $this->delayDays($p);
-                $text = 'Vous n\'avez pas mis a jour le projet ' . $p->designation . ' depuis ' . $lastDate->toDateString() . '.';
+            if($p->etatPhysique !="A"){
+            $lastDate = Carbon::parse($p->avancement->first()['created_at']);
+            $diffDate = $lastDate->diffInDays(Carbon::now()) - $this->delayDays($p);
+            $text = 'Vous n\'avez pas mis a jour le projet ' . $p->designation . ' depuis ' . $lastDate->toDateString() . '.';
 
-                if ($diffDate >= $days) {
+            if ($diffDate >= $days) {
 
-                    /* if notifications exist deja*/
+                /* if notifications exist deja*/
 
-                    if (!$this->NotifExist($text)) {
-                        $user->notify(new userNotification($user, $p, 'Retard', $text));
-                    }
+                if (!$this->NotifExist($text)) {
+                    $user->notify(new userNotification($user, $p, 'Retard', $text));
                 }
             }
+        }
         }
         # code...
     }
@@ -174,10 +174,10 @@ class HomeController extends Controller
         $days = 0;
         $retards = $p->retards()->where('type', 'realisation')->orderBy('date_reprise', 'desc')->get();
 
-        if ($retards->isNotEmpty() && $p->avancement->first()) {
+        if ($retards != "[]") {
             $r = $retards->first();
 
-            $arret = Carbon::parse($p->avancement->first()->created_at);
+            $arret = Carbon::parse($p->avancement->first()['created_at']);
             $reprise = Carbon::parse($r->date_reprise);
             $days = $arret->diffInDays($reprise);
         }
