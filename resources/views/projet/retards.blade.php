@@ -42,10 +42,11 @@
                 <input type="date" id="end-date" name="date_reprise" class="form-control" required>
             </div>
 
-            <div class="form-group col-4">
-                <label for="attachment">Pièce jointe</label>
-                <input type="file" name="attachment" id="attachment" class="form-control-file">
-            </div>
+           <div class="form-group col-4">
+    <label for="attachment">Pièce jointe</label>
+    <input type="file" name="attachment" id="attachment" class="form-control-file" required>
+</div>
+
 
             <div class="form-group col-2">
                 <button type="submit" class="btn btn-primary form-control">Ajouter</button>

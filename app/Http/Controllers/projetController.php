@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Notifications\userNotification;
@@ -57,71 +58,85 @@ class projetController extends Controller
      */
     public function store(Request $request)
     {
-
         $id = Auth::user()->id;
 
         $data = $request->all();
+        unset($data['created_at'], $data['updated_at']);
 
+        // ✅ Normalize incoming date strings early (and convert "" to null)
+        $data['odsEtude'] = $this->normalizeSqlServerDate($data['odsEtude'] ?? null);
+        $data['odsRealisation'] = $this->normalizeSqlServerDate($data['odsRealisation'] ?? null);
+        $data['dateReception'] = $this->normalizeSqlServerDate($data['dateReception'] ?? null);
+
+        // Your existing logic
         if ($data['delai'] == 'jourE') {
             $delai = ' j';
         } else {
             $delai = ' m';
         }
 
+        if (!empty($data['odsRealisation']) && !empty($data['odsEtude'])) {
 
-    if($data['odsRealisation']!= null && $data['odsEtude']!= null ){
-        $dateR = Carbon::parse($data['odsRealisation']);
+            // ✅ now odsRealisation is guaranteed Y-m-d
+            $dateR = Carbon::createFromFormat('Y-m-d', $data['odsRealisation']);
 
-        if ($data['realisation'] == 'jourR') {
-            $r = ' j';
-            $data['dateReception'] = $dateR->addDays((int) $data['delaiR'])->format('Y-m-d');
+            if ($data['realisation'] == 'jourR') {
+                $r = ' j';
+                $data['dateReception'] = $dateR->addDays((int) $data['delaiR'])->format('Y-m-d');
+            } else {
+                $r = ' m';
+                $data['dateReception'] = $dateR->addMonths((int) $data['delaiR'])->format('Y-m-d');
+            }
         } else {
-            $r = ' m';
-            $data['dateReception'] = $dateR->addMonths((int) $data['delaiR'])->format('Y-m-d');
+
+            if (empty($data['odsEtude'])) {
+                $data['etatPhysique'] = "NL";
+            }
+
+            $r = ($data['realisation'] == 'jourR') ? ' j' : ' m';
         }
-
-    }else{
-
-        if($data['odsEtude']== null){
-            $data['etatPhysique']= "NL";
-        }
-
-        if ($data['realisation'] == 'jourR') {
-            $r = ' j';
-
-        } else {
-            $r = ' m';
-        }
-    }
-    // test
-
 
         $data['delaiE'] = $data['delaiE'] . " " . $delai;
         $data['delaiR'] = $data['delaiR'] . " " . $r;
         $data['user_id'] = $id;
 
+        \DB::listen(function ($query) {
+            logger()->info('SQL', [
+                'sql' => $query->sql,
+                'bindings' => $query->bindings,
+            ]);
+        });
+
         $projet = Projet::create($data);
-        $projet->save();
 
-        $avancement = Avancement::create(['projet_id' => $projet->id, 'montantAlloue' => $data['montantAlloue'], 'montantEC' => $data['montantEC'], 'montantPC' => $data['montantPC'],
-
-            'delaiR' => $data['delaiR'], 'etatPhysique' => $data['etatPhysique'], 'tauxA' => $data['tauxA'], 'observation' => $data['observation'],
-
+        $avancement = Avancement::create([
+            'projet_id' => $projet->id,
+            'montantAlloue' => $data['montantAlloue'],
+            'montantEC' => $data['montantEC'],
+            'montantPC' => $data['montantPC'],
+            'delaiR' => $data['delaiR'],
+            'etatPhysique' => $data['etatPhysique'],
+            'tauxA' => $data['tauxA'],
+            'observation' => $data['observation'],
         ]);
-
-        $avancement->save();
-
-        /* notification */
 
         $users = User::all();
         foreach ($users as $user) {
             if ($user->roles->contains('name', 'superA')) {
-                $user->notify(new userNotification(Auth::user(), $projet, 'ajout', Auth::user()->name . ' a ajouté le projet ' . $projet->designation));
-
+                $user->notify(new userNotification(
+                    Auth::user(),
+                    $projet,
+                    'ajout',
+                    Auth::user()->name . ' a ajouté le projet ' . $projet->designation
+                ));
             }
         }
 
-        return redirect(route('projet.gestionprojets', ['id' => $id, 'finance' => 'tout','year'=>Carbon::today()->year]));
+        return redirect(route('projet.gestionprojets', [
+            'id' => $id,
+            'finance' => 'tout',
+            'year' => Carbon::today()->year
+        ]));
     }
 
     /**
@@ -156,109 +171,108 @@ class projetController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-{
-    $data = $request->all();
-    $projet = Projet::find($id);
+    {
+        $data = $request->all();
+        $projet = Projet::find($id);
 
-    // ✅ ADD: tracked fields + snapshot BEFORE update
-    $tracked = [
-        // Projet table fields we want to track
-        'finance',
-        'delaiE',
-        'delaiR',
-        'odsEtude',
-        'odsRealisation',
-        'dateReception',                 
-       'montantAlloue', 
-        'montantEC', 
-        'montantPC', 
-        'etatPhysique',
-        'tauxA', 
-        'observation'
-        // add more later if needed,
-    ];
-    $before = $projet ? $projet->only($tracked) : [];
+        // ✅ ADD: tracked fields + snapshot BEFORE update
+        $tracked = [
+            // Projet table fields we want to track
+            'finance',
+            'delaiE',
+            'delaiR',
+            'odsEtude',
+            'odsRealisation',
+            'dateReception',
+            'montantAlloue',
+            'montantEC',
+            'montantPC',
+            'etatPhysique',
+            'tauxA',
+            'observation'
+            // add more later if needed,
+        ];
+        $before = $projet ? $projet->only($tracked) : [];
 
-    if ($data['delai'] == 'jourE') {
-        $delai = ' j';
-    } else {
-        $delai = ' m';
-    }
-
-    if($data['odsRealisation']!= null){
-
-        $dateR = Carbon::parse($data['odsRealisation']);
-
-        if ($data['realisation'] == 'jourR') {
-            $r = ' j';
-            $data['dateReception'] = $dateR->addDays((int) $data['delaiR'] + (int) $this->delayDays($projet))->format('Y-m-d');
+        if ($data['delai'] == 'jourE') {
+            $delai = ' j';
         } else {
-            $r = ' m';
-            $dateR->addMonths((int) $data['delaiR'])->format('Y-m-d');
-            $data['dateReception'] = $dateR->addDays((int) $this->delayDays($projet))->format('Y-m-d');
+            $delai = ' m';
         }
-    }else{
-        if ($data['realisation'] == 'jourR') {
-            $r = ' j';
 
+        if ($data['odsRealisation'] != null) {
+
+            $dateR = Carbon::parse($data['odsRealisation']);
+
+            if ($data['realisation'] == 'jourR') {
+                $r = ' j';
+                $data['dateReception'] = $dateR->addDays((int) $data['delaiR'] + (int) $this->delayDays($projet))->format('Y-m-d');
+            } else {
+                $r = ' m';
+                $dateR->addMonths((int) $data['delaiR'])->format('Y-m-d');
+                $data['dateReception'] = $dateR->addDays((int) $this->delayDays($projet))->format('Y-m-d');
+            }
         } else {
-            $r = ' m';
+            if ($data['realisation'] == 'jourR') {
+                $r = ' j';
+            } else {
+                $r = ' m';
+            }
         }
-    }
 
-    $data['delaiE'] = $data['delaiE'] . " " . $delai;
-    $data['delaiR'] = $data['delaiR'] . " " . $r;
+        $data['delaiE'] = $data['delaiE'] . " " . $delai;
+        $data['delaiR'] = $data['delaiR'] . " " . $r;
 
-    $projet->update($data);
-    $projet->save();
+        $projet->update($data);
+        $projet->save();
 
-    // ✅ ADD: snapshot AFTER update + log only changed fields (Projet fields)
-    $after = $projet->fresh()->only($tracked);
+        // ✅ ADD: snapshot AFTER update + log only changed fields (Projet fields)
+        $after = $projet->fresh()->only($tracked);
 
-    foreach ($tracked as $field) {
-        $old = array_key_exists($field, $before) ? (string) $before[$field] : null;
-        $new = array_key_exists($field, $after)  ? (string) $after[$field]  : null;
+        foreach ($tracked as $field) {
+            $old = array_key_exists($field, $before) ? (string) $before[$field] : null;
+            $new = array_key_exists($field, $after)  ? (string) $after[$field]  : null;
 
-        // normalize null/empty
-        $oldNorm = ($old === '' ? null : $old);
-        $newNorm = ($new === '' ? null : $new);
+            // normalize null/empty
+            $oldNorm = ($old === '' ? null : $old);
+            $newNorm = ($new === '' ? null : $new);
 
-        if ($oldNorm !== $newNorm) {
-            ProjectHistory::create([
-                'projet_id'   => $projet->id,
-                'user_id'     => Auth::id(), // ✅ uses your existing Auth import
-                'action'      => 'updated',
-                'field'       => $field,
-                'old_value'   => $oldNorm,
-                'new_value'   => $newNorm,
-                'description' => null,
-            ]);
+            if ($oldNorm !== $newNorm) {
+                ProjectHistory::create([
+                    'projet_id'   => $projet->id,
+                    'user_id'     => Auth::id(), // ✅ uses your existing Auth import
+                    'action'      => 'updated',
+                    'field'       => $field,
+                    'old_value'   => $oldNorm,
+                    'new_value'   => $newNorm,
+                    'description' => null,
+                ]);
+            }
         }
-    }
 
-    $av = $request->only(['montantAlloue', 'montantEC', 'montantPC', 'delaiR', 'etatPhysique', 'tauxA', 'observation']);
-    $av['projet_id'] = $projet->id;
-    $av['delaiR'] = $av['delaiR'] . " " . $r;
+        $av = $request->only(['montantAlloue', 'montantEC', 'montantPC', 'delaiR', 'etatPhysique', 'tauxA', 'observation']);
+        $av['projet_id'] = $projet->id;
+        $av['delaiR'] = $av['delaiR'] . " " . $r;
 
-    $check = Avancement::where($av)->exists();
+        $check = Avancement::where($av)->exists();
 
-    if ($check == false) {
-        $avancement = Avancement::create($av);
-        $avancement->save();
-    }
-
-    // notification -------------------------------------------------------------
-
-    $users = User::all();
-    foreach ($users as $user) {
-        if ($user->roles->contains('name', 'superA')) {
-            $user->notify(new userNotification(Auth::user(), $projet, 'modification', Auth::user()->name . ' a modifié le projet ' . $projet->designation));
+        if ($check == false) {
+            $avancement = Avancement::create($av);
+            $avancement->save();
         }
-    }
 
-    return redirect()
-        ->route('projet.voirprojet', $id);
-}
+        // notification -------------------------------------------------------------
+
+        $users = User::all();
+        foreach ($users as $user) {
+            if ($user->roles->contains('name', 'superA')) {
+                $user->notify(new userNotification(Auth::user(), $projet, 'modification', Auth::user()->name . ' a modifié le projet ' . $projet->designation));
+            }
+        }
+
+        return redirect()
+            ->route('projet.voirprojet', $id);
+    }
     /**
      * Remove the specified resource from storage.
      *
@@ -276,11 +290,11 @@ class projetController extends Controller
         $users = User::all();
         foreach ($users as $user) {
             if ($user->roles->contains('name', 'superA')) {
-                $user->notify(new userNotification(Auth::user(), $projet, 'suppression',Auth::user()->name . ' a supprimé le projet ' . $projet->designation));
+                $user->notify(new userNotification(Auth::user(), $projet, 'suppression', Auth::user()->name . ' a supprimé le projet ' . $projet->designation));
             }
         }
 
-        return redirect(route('projet.gestionprojets', ['id' => Auth::user()->id, 'finance' => 'tout','year'=>Carbon::today()->year]));
+        return redirect(route('projet.gestionprojets', ['id' => Auth::user()->id, 'finance' => 'tout', 'year' => Carbon::today()->year]));
     }
 
     public function deleteA($avancement, $projet_id)
@@ -292,75 +306,74 @@ class projetController extends Controller
     }
 
     public function voirProjet($id)
-{
-    $projet = Projet::find($id);
-    if($projet!=null){
-        $natures = Nature::all();
-        $finances = Finance::orderBy('name', 'DESC')->get();
+    {
+        $projet = Projet::find($id);
+        if ($projet != null) {
+            $natures = Nature::all();
+            $finances = Finance::orderBy('name', 'DESC')->get();
 
-        // ✅ ADD: load project histories (latest first)
-        $histories = ProjectHistory::where('projet_id', $projet->id)
-            ->orderBy('created_at', 'DESC')
-            ->get();
+            // ✅ ADD: load project histories (latest first)
+            $histories = ProjectHistory::where('projet_id', $projet->id)
+                ->orderBy('created_at', 'DESC')
+                ->get();
 
-        return view('projet/voirProjet')
-            ->with([
-                'projet' => $projet,
-                'natures' => $natures,
-                'finances' => $finances,
-                'histories' => $histories, // ✅ ADD
-            ]);
-    }else{
-        return redirect()->back()->with('error',"ce projet n'existe pas");
+            return view('projet/voirProjet')
+                ->with([
+                    'projet' => $projet,
+                    'natures' => $natures,
+                    'finances' => $finances,
+                    'histories' => $histories, // ✅ ADD
+                ]);
+        } else {
+            return redirect()->back()->with('error', "ce projet n'existe pas");
+        }
     }
-}
+
 
     //gestion des projets
 
-    public function gestion(string $id, string $finance,string $year)
+    public function gestion(string $id, string $finance, string $year)
     {
 
         $natures = Nature::orderBy('id', 'DESC')->get();
         $finances = Finance::orderBy('name', 'DESC')->get();
-        $count=Auth::user()->roles->where('status', 1)->whereIn('name', ['user','Dipb'])->count();
-        $test_auth= $id != Auth::user()->id;
+        $count = Auth::user()->roles->where('status', 1)->whereIn('name', ['user', 'Dipb'])->count();
+        $test_auth = $id != Auth::user()->id;
 
-        if ($test_auth && $count>0) {
+        if ($test_auth && $count > 0) {
 
             return view('admin/users/error');
-
         } else {
-            if ($count==0 && !$test_auth) {
+            if ($count == 0 && !$test_auth) {
 
                 $id = Role::where(['name' => 'user', 'status' => 1])->first()
                     ->users()
                     ->first()->id;
-
             }
 
             $p[] = array();
 
             foreach ($natures as $i => $n) {
                 # code...
-              $projets =  Projet::getProjetsByFinanceNature($id, $year, $finance, $n->name);
+                $projets =  Projet::getProjetsByFinanceNature($id, $year, $finance, $n->name);
 
-            //   foreach ($projets as $j => $p1) {
-            //       if($p1->etatPhysique == 'NL' && Carbon::parse($p1->created_at)->year != $year ){
-            //           // delete projet from array projets
-            //         unset($projets[$j] );
+                //   foreach ($projets as $j => $p1) {
+                //       if($p1->etatPhysique == 'NL' && Carbon::parse($p1->created_at)->year != $year ){
+                //           // delete projet from array projets
+                //         unset($projets[$j] );
 
-            //       }
+                //       }
 
 
 
-            //   }
-            //   if($projet->odsEtude!= null && $projet->created_at == $year ){
+                //   }
+                //   if($projet->odsEtude!= null && $projet->created_at == $year ){
 
 
                 $p[$i] = $projets;
 
                 $p[$i]->name = $n->name;
-            // }
+                // }
 
             }
             $p = array_reverse($p);
@@ -381,13 +394,13 @@ class projetController extends Controller
                 'year' => $year,
 
             ]);
-
         }
     }
 
     protected function validator(array $data)
     {
-        return Validator::make($data, ['name' => ['required', 'string', 'max:(5)', 'unique'],
+        return Validator::make($data, [
+            'name' => ['required', 'string', 'max:(5)', 'unique'],
 
         ]);
     }
@@ -408,7 +421,6 @@ class projetController extends Controller
             ->unreadNotifications
             ->where('id', $id)->markAsRead();
         return 'success';
-
     }
 
     public function markAsRead(Request $request)
@@ -422,7 +434,6 @@ class projetController extends Controller
         }
 
         return "success";
-
     }
     public function deleteNotif(Request $request)
     {
@@ -434,38 +445,37 @@ class projetController extends Controller
         }
 
         return "success";
-
     }
 
-    public function recaps($recap_id, $finance,$year)
+    public function recaps($recap_id, $finance, $year)
     {
 
         switch ($recap_id) {
             case '1':
 
                 $finances = Finance::orderBy('name', 'DESC')->get();
-                $users = $this->recap1($finance,$year);
-                $total = $this->recap1Total($finance,$year);
+                $users = $this->recap1($finance, $year);
+                $total = $this->recap1Total($finance, $year);
 
-                $recapData = ['finance' => $finance, 'finances' => $finances, 'users' => $users, 'total' => $total , 'year' => $year];
+                $recapData = ['finance' => $finance, 'finances' => $finances, 'users' => $users, 'total' => $total, 'year' => $year];
                 break;
             case '2':
                 $users = $this->recap2($year);
                 $total = $this->recap2Total($year);
-                $recapData = ['finance' => $finance, 'users' => $users, 'total' => $total , 'year' => $year];
+                $recapData = ['finance' => $finance, 'users' => $users, 'total' => $total, 'year' => $year];
                 break;
 
             case '3':
                 $users = $this->recap3($year);
                 $total = $this->recap3Total($year);
-                $recapData = ['finance' => $finance, 'users' => $users, 'total' => $total , 'year' => $year];
+                $recapData = ['finance' => $finance, 'users' => $users, 'total' => $total, 'year' => $year];
                 break;
 
             case '4':
-                $natures=Nature::orderBy('id', 'ASC')->get();
-                $n = $this->recap4('construction',$year);
-                $total = $this->recap4Total('construction',$year);
-                $recapData = ['finance' => $finance, 'n' => $n,'natures' => $natures, 'total' => $total , 'year' => $year];
+                $natures = Nature::orderBy('id', 'ASC')->get();
+                $n = $this->recap4('construction', $year);
+                $total = $this->recap4Total('construction', $year);
+                $recapData = ['finance' => $finance, 'n' => $n, 'natures' => $natures, 'total' => $total, 'year' => $year];
                 break;
             default:
                 # code...
@@ -490,11 +500,11 @@ class projetController extends Controller
 
         $projet = Projet::find($id);
 
-       $data = $request->except('_token', '_method', 'attachment'); 
+        $data = $request->except('_token', '_method', 'attachment');
 
-    if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) { 
-        $data['attachment'] = $request->file('attachment')->store('retards', 'public');
-    }
+        if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
+            $data['attachment'] = $request->file('attachment')->store('retards', 'public');
+        }
 
         $retard = Retard::create($data);
 
@@ -547,7 +557,6 @@ class projetController extends Controller
         }
 
         return $days;
-
     }
 
     public function receptionDate(Projet $p)
@@ -564,12 +573,11 @@ class projetController extends Controller
 
         $p->save();
         return $p;
-
     }
 
     //-----------------------recap1------------------------
 
-    public function recap1(string $finance,$year)
+    public function recap1(string $finance, $year)
     {
         $natures = Nature::all();
         $users = User::all();
@@ -577,34 +585,32 @@ class projetController extends Controller
             if ($user->roles()->where('status', 1)->first()->name == 'user') {
                 foreach ($natures as $i => $n) {
                     # code...
-                    $p[$key][$n->name] = Projet::getNbNatureP($finance, $user->id,$year, $n->name);
-
+                    $p[$key][$n->name] = Projet::getNbNatureP($finance, $user->id, $year, $n->name);
                 }
                 $p[$key]['name'] = $user->name;
-                $p[$key]['totalP'] = Projet::getNbProjet($user->id,$year, $finance);
-                $p[$key]['montantAlloue'] = Projet::sumMontant($user->id,$year, $finance, 'montantAlloue');
-                $p[$key]['montantPC'] = Projet::sumMontant($user->id,$year, $finance, 'montantPC');
-                $p[$key]['tauxConsommation'] = Projet::tauxConsommation($user->id,$year, $finance);
+                $p[$key]['totalP'] = Projet::getNbProjet($user->id, $year, $finance);
+                $p[$key]['montantAlloue'] = Projet::sumMontant($user->id, $year, $finance, 'montantAlloue');
+                $p[$key]['montantPC'] = Projet::sumMontant($user->id, $year, $finance, 'montantPC');
+                $p[$key]['tauxConsommation'] = Projet::tauxConsommation($user->id, $year, $finance);
             }
             # code...
         }
         return $p;
     }
 
-    public function recap1Total(string $finance,$year)
+    public function recap1Total(string $finance, $year)
     {
         $natures = Nature::all();
 
         foreach ($natures as $i => $n) {
             # code...
-            $p[$n->name] = Projet::getNbNatureAllP($finance, $n->name,$year);
-
+            $p[$n->name] = Projet::getNbNatureAllP($finance, $n->name, $year);
         }
 
-        $p['totalP'] = Projet::getNbProjetT($finance,$year);
-        $p['montantAlloue'] = Projet::montantTotal($finance, 'montantAlloue',$year);
-        $p['montantPC'] = Projet::montantTotal($finance, 'montantPC',$year);
-        $p['tauxConsommation'] = Projet::tauxConsommationTotal($finance,$year);
+        $p['totalP'] = Projet::getNbProjetT($finance, $year);
+        $p['montantAlloue'] = Projet::montantTotal($finance, 'montantAlloue', $year);
+        $p['montantPC'] = Projet::montantTotal($finance, 'montantPC', $year);
+        $p['tauxConsommation'] = Projet::tauxConsommationTotal($finance, $year);
 
         return $p;
     }
@@ -618,12 +624,11 @@ class projetController extends Controller
         foreach ($users as $key => $user) {
             if ($user->roles()->where('status', 1)->first()->name == 'user') {
 
-                $p[$key] = Projet::countEtatTotalG($user->id,$year, 'tout');
+                $p[$key] = Projet::countEtatTotalG($user->id, $year, 'tout');
                 $p[$key]['name'] = $user->name;
-                $p[$key]['totalP'] = Projet::getNbProjet($user->id,$year, 'tout');
-                $p[$key]['projetNL'] = Projet::projetNL($user->id,$year);
-                $p[$key]['tauxProjetNL'] = Projet::tauxProjetNL($user->id,$year);
-
+                $p[$key]['totalP'] = Projet::getNbProjet($user->id, $year, 'tout');
+                $p[$key]['projetNL'] = Projet::projetNL($user->id, $year);
+                $p[$key]['tauxProjetNL'] = Projet::tauxProjetNL($user->id, $year);
             }
             # code...
         }
@@ -635,7 +640,7 @@ class projetController extends Controller
     {
 
         $p = Projet::countProjetByEtat($year);
-        $p['totalP'] = Projet::getNbProjetT('tout',$year);
+        $p['totalP'] = Projet::getNbProjetT('tout', $year);
         $p['projetNL'] = Projet::totalProjetNL($year);
         $p['tauxProjetNL'] = Projet::tauxTotalProjetNL($year);
 
@@ -655,11 +660,11 @@ class projetController extends Controller
 
                 foreach ($natures as $i => $n) {
                     foreach ($etat as $i => $e) {
-                        $p[$key]['nature'][$n->name][$e] = Projet::getCountEtat($user->id,$year, 'tout', $n->name, $e);
+                        $p[$key]['nature'][$n->name][$e] = Projet::getCountEtat($user->id, $year, 'tout', $n->name, $e);
                     }
                 }
                 $p[$key]['name'] = $user->name;
-                $p[$key]['totalP'] = Projet::getNbProjet($user->id,$year, 'tout');
+                $p[$key]['totalP'] = Projet::getNbProjet($user->id, $year, 'tout');
             }
         }
         return $p;
@@ -671,74 +676,73 @@ class projetController extends Controller
         $etat = ['E', 'P', 'R', 'NL', 'A'];
         foreach ($natures as $i => $n) {
             foreach ($etat as $i => $e) {
-                $p['nature'][$n->name][$e] = Projet::getCountByNatureEtat($n->name, $e,$year);
-                $p['tauxNature'][$n->name][$e] = Projet::getRatioNatureEtat($n->name, $e,$year);
-                $p['nature'][$n->name]['total'] = Projet::getNbNatureAllP('tout', $n->name,$year);
+                $p['nature'][$n->name][$e] = Projet::getCountByNatureEtat($n->name, $e, $year);
+                $p['tauxNature'][$n->name][$e] = Projet::getRatioNatureEtat($n->name, $e, $year);
+                $p['nature'][$n->name]['total'] = Projet::getNbNatureAllP('tout', $n->name, $year);
             }
         }
 
-        $p['totalP'] = Projet::getNbProjetT('tout',$year);
+        $p['totalP'] = Projet::getNbProjetT('tout', $year);
         return $p;
     }
 
-    public function recap4($name,$year)
+    public function recap4($name, $year)
     {
         $etat = ['E', 'P', 'R', 'NL', 'A'];
 
 
-        $nature = Nature::where('name',$name)->first();
+        $nature = Nature::where('name', $name)->first();
 
         $natures = Nature::orderBy('id', 'DESC')->get();
-      //dd($nature);
+        //dd($nature);
         $users = User::all();
         // foreach ($natures as $key => $nature) {
-           $p['id'] = $nature->id;
-            foreach ($users as $key => $user) {
-                if ($user->roles()->where('status', 1)->first()->name == 'user') {
+        $p['id'] = $nature->id;
+        foreach ($users as $key => $user) {
+            if ($user->roles()->where('status', 1)->first()->name == 'user') {
 
-                   $p[$key]['name'] = $user->name;
+                $p[$key]['name'] = $user->name;
 
-                   $p[$key]['montantAlloue'] = Projet::totalMontant($user->id,$year, 'tout', $nature->name, 'montantAlloue');
-                   $p[$key]['montantEC'] = Projet::totalMontant($user->id,$year, 'tout', $nature->name, 'montantEC');
-                   $p[$key]['montantPC'] = Projet::totalMontant($user->id,$year, 'tout', $nature->name, 'montantPC');
+                $p[$key]['montantAlloue'] = Projet::totalMontant($user->id, $year, 'tout', $nature->name, 'montantAlloue');
+                $p[$key]['montantEC'] = Projet::totalMontant($user->id, $year, 'tout', $nature->name, 'montantEC');
+                $p[$key]['montantPC'] = Projet::totalMontant($user->id, $year, 'tout', $nature->name, 'montantPC');
 
-                    if ($p[$key]['montantAlloue'] != 0) {
-                        $a =$p[$key]['montantEC'] /$p[$key]['montantAlloue'];
-                        $b =$p[$key]['montantPC'] /$p[$key]['montantAlloue'];
-                       $p[$key]['tauxEngagement'] = round($a * 100, 2) . " %";
-                       $p[$key]['tauxConsommation'] = round($b * 100, 2) . " %";
-                    } else {
-                       $p[$key]['tauxEngagement'] = '0 %';
-                       $p[$key]['tauxConsommation'] = '0 %';
-                    }
-
-                    foreach ($etat as $i => $e) {
-                       $p[$key][$e] = Projet::getCountEtat($user->id,$year, 'tout', $nature->name, $e);
-                    }
-
-                   $p[$key]['totalP'] = Projet::getNbNatureP('tout', $user->id,$year, $nature->name);
-                   $p[$key]['projetNL'] = Projet::getCountEtat($user->id,$year, 'tout', $nature->name, 'E') + Projet::getCountEtat($user->id,$year, 'tout', $nature->name, 'P') + Projet::getCountEtat($user->id,$year, 'tout', $nature->name, 'NL');
-                    if ($p[$key]['totalP'] != 0) {
-                        $a =$p[$key]['projetNL'] /$p[$key]['totalP'];
-                       $p[$key]['tauxProjetNL'] = round($a * 100, 2) . " %";
-                    } else {
-                       $p[$key]['tauxProjetNL'] = '0 %';
-                    }
-
+                if ($p[$key]['montantAlloue'] != 0) {
+                    $a = $p[$key]['montantEC'] / $p[$key]['montantAlloue'];
+                    $b = $p[$key]['montantPC'] / $p[$key]['montantAlloue'];
+                    $p[$key]['tauxEngagement'] = round($a * 100, 2) . " %";
+                    $p[$key]['tauxConsommation'] = round($b * 100, 2) . " %";
+                } else {
+                    $p[$key]['tauxEngagement'] = '0 %';
+                    $p[$key]['tauxConsommation'] = '0 %';
                 }
-                # code...
+
+                foreach ($etat as $i => $e) {
+                    $p[$key][$e] = Projet::getCountEtat($user->id, $year, 'tout', $nature->name, $e);
+                }
+
+                $p[$key]['totalP'] = Projet::getNbNatureP('tout', $user->id, $year, $nature->name);
+                $p[$key]['projetNL'] = Projet::getCountEtat($user->id, $year, 'tout', $nature->name, 'E') + Projet::getCountEtat($user->id, $year, 'tout', $nature->name, 'P') + Projet::getCountEtat($user->id, $year, 'tout', $nature->name, 'NL');
+                if ($p[$key]['totalP'] != 0) {
+                    $a = $p[$key]['projetNL'] / $p[$key]['totalP'];
+                    $p[$key]['tauxProjetNL'] = round($a * 100, 2) . " %";
+                } else {
+                    $p[$key]['tauxProjetNL'] = '0 %';
+                }
             }
+            # code...
+        }
 
 
         return $p;
     }
 
-    public function recap4Total($name,$year)
+    public function recap4Total($name, $year)
     {
 
         $etat = ['E', 'P', 'R', 'NL', 'A'];
 
-        $nature = Nature::where('name',$name)->first();
+        $nature = Nature::where('name', $name)->first();
 
 
 
@@ -746,46 +750,57 @@ class projetController extends Controller
         $users = User::all();
 
 
-           $p['montantAlloue'] = Projet::getSumMontantByNature($nature->name, 'montantAlloue',$year);
-           $p['montantEC'] = Projet::getSumMontantByNature($nature->name, 'montantEC',$year);
-           $p['montantPC'] = Projet::getSumMontantByNature($nature->name, 'montantPC',$year);
+        $p['montantAlloue'] = Projet::getSumMontantByNature($nature->name, 'montantAlloue', $year);
+        $p['montantEC'] = Projet::getSumMontantByNature($nature->name, 'montantEC', $year);
+        $p['montantPC'] = Projet::getSumMontantByNature($nature->name, 'montantPC', $year);
 
-            if ($p['montantAlloue'] != 0) {
-                $a =$p['montantEC'] /$p['montantAlloue'];
-                $b =$p['montantPC'] /$p['montantAlloue'];
-               $p['tauxEngagement'] = round($a * 100, 2) . " %";
-               $p['tauxConsommation'] = round($b * 100, 2) . " %";
-            } else {
-               $p['tauxEngagement'] = '0 %';
-               $p['tauxConsommation'] = '0 %';
-            }
+        if ($p['montantAlloue'] != 0) {
+            $a = $p['montantEC'] / $p['montantAlloue'];
+            $b = $p['montantPC'] / $p['montantAlloue'];
+            $p['tauxEngagement'] = round($a * 100, 2) . " %";
+            $p['tauxConsommation'] = round($b * 100, 2) . " %";
+        } else {
+            $p['tauxEngagement'] = '0 %';
+            $p['tauxConsommation'] = '0 %';
+        }
 
-            foreach ($etat as $i => $e) {
-               $p[$e] = Projet::getCountByNatureEtat($nature->name, $e,$year);
-            }
+        foreach ($etat as $i => $e) {
+            $p[$e] = Projet::getCountByNatureEtat($nature->name, $e, $year);
+        }
 
-           $p['totalP'] = Projet::getNbNatureAllP('tout', $nature->name,$year);
-           $p['projetNL'] = Projet::getCountByNatureEtat($nature->name, 'E',$year) + Projet::getCountByNatureEtat($nature->name, 'P',$year) + Projet::getCountByNatureEtat($nature->name, 'NL',$year);
-            if ($p['totalP'] != 0) {
-                $a =$p['projetNL'] /$p['totalP'];
-               $p['tauxProjetNL'] = round($a * 100, 2) . " %";
-            } else {
-               $p['tauxProjetNL'] = '0 %';
-            }
+        $p['totalP'] = Projet::getNbNatureAllP('tout', $nature->name, $year);
+        $p['projetNL'] = Projet::getCountByNatureEtat($nature->name, 'E', $year) + Projet::getCountByNatureEtat($nature->name, 'P', $year) + Projet::getCountByNatureEtat($nature->name, 'NL', $year);
+        if ($p['totalP'] != 0) {
+            $a = $p['projetNL'] / $p['totalP'];
+            $p['tauxProjetNL'] = round($a * 100, 2) . " %";
+        } else {
+            $p['tauxProjetNL'] = '0 %';
+        }
 
 
         return $p;
-
     }
-    public function recap4SelecteNature($id,$year){
+    public function recap4SelecteNature($id, $year)
+    {
 
-        $name=Nature::where('id',$id)->first()->name;
-        $nature = $this->recap4($name,$year);
-        $total = $this->recap4Total($name,$year);
+        $name = Nature::where('id', $id)->first()->name;
+        $nature = $this->recap4($name, $year);
+        $total = $this->recap4Total($name, $year);
 
-       return view('projet.recap4_section')->with(['n'=>$nature,'total'=>$total,'year'=>$year]);
-
-
+        return view('projet.recap4_section')->with(['n' => $nature, 'total' => $total, 'year' => $year]);
     }
 
+    private function normalizeSqlServerDate($value)
+    {
+        if ($value === null) return null;
+
+        $value = trim((string) $value);
+        if ($value === '') return null;
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+            return Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        }
+
+        return Carbon::parse($value)->format('Y-m-d');
+    }
 }

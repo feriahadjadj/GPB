@@ -16,7 +16,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','tel','nbWilaya'
+        'name',
+        'email',
+        'password',
+        'tel',
+        'nbWilaya'
     ];
 
     /**
@@ -25,7 +29,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -42,21 +47,22 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Role');
     }
 
-
-
-    public function hasAnyRoles($roles){
-        if($this->roles()->whereIn('name',$roles)->first()){
-            return true ;
+    public function hasAnyRoles($roles)
+    {
+        if ($this->roles()->whereIn('name', $roles)->first()) {
+            return true;
         }
 
-        return false ;
+        return false;
     }
-    public function hasRole($role){
-        if($this->roles()->where('name',$role)->first()){
-            return true ;
+
+    public function hasRole($role)
+    {
+        if ($this->roles()->where('name', $role)->first()) {
+            return true;
         }
 
-        return false ;
+        return false;
     }
 
     public function projet()
@@ -64,30 +70,42 @@ class User extends Authenticatable
         return $this->hasMany('App\Projet');
     }
 
-    public static function getUserName($id){
+    public static function getUserName($id)
+    {
         return User::find($id)->name;
-
     }
 
-    public function isUser($email){
-
-        if($this->email==$email){
-
+    public function isUser($email)
+    {
+        if ($this->email == $email) {
             return true;
-        }else{
-            //dd($this->email."-".$email);
+        } else {
             return false;
         }
     }
 
-
-
-
-
-    public static function getNbNotifications(){
-
-        return auth()->user()->unreadNotifications()->count() ;
+    /**
+     * ✅ Notifications (override to use CustomDatabaseNotification)
+     */
+    public function notifications()
+    {
+        return $this->morphMany(\App\CustomDatabaseNotification::class, 'notifiable')
+            ->orderBy('created_at', 'desc');
     }
 
+    public function unreadNotifications()
+    {
+        return $this->notifications()->whereNull('read_at');
+    }
 
+    public static function getNbNotifications()
+    {
+        $user = auth()->user();
+        return $user ? $user->unreadNotifications()->count() : 0;
+    }
+
+    public function readNotifications()
+    {
+        return $this->notifications()->whereNotNull('read_at');
+    }
 }

@@ -150,6 +150,7 @@ class HomeController extends Controller
         # code...
     }
 
+    
     public function NotifExist($text)
     {
 

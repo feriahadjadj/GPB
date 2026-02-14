@@ -268,7 +268,49 @@ body {
     font-size:12px;
     color:#6b7280;
 }
+</style>
+<style>
+@media print {
 
+    body {
+        background: white !important;
+    }
+
+    .filter-bar,
+    .tabs-pro,
+    .header-actions,
+    .btn-inline,
+    .modal-overlay {
+        display: none !important;
+    }
+
+    .page-container {
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .tab-content {
+        display: block !important;
+    }
+
+    .table-wrapper {
+        max-height: none !important;
+        overflow: visible !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    .pro-table th {
+        background: #f2f2f2 !important;
+    }
+
+    #print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+}
 </style>
 
 <div class="page-container">
@@ -556,10 +598,136 @@ $(".select-filtre").change(function() {
 
 <script>
 function printAllProjects() {
+    let original = document.body.innerHTML;
 
-    // hide filters / buttons
-    document.querySelectorAll('.filter-bar, .tabs-pro, .header-actions').forEach(el => {
-        el.style.display = 'none';
+    // All possible categories (even if empty)
+    const categories = [
+        "construction",
+        "rehabilitation",
+        "amenagement",
+        "etancheite",
+        "logements d'astreinte"
+    ];
+
+    // Totals
+    let globalAlloue = 0;
+    let globalEngage = 0;
+    let globalPaye   = 0;
+    let globalStates = { E: 0, P: 0, R: 0, NL: 0, A: 0 };
+
+    function normalizeString(str) {
+        if (!str) return '';
+        return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    let html = `
+        <div style="margin-bottom:20px;">
+            <img src="{{ asset('img/logo-head.png') }}" width="220">
+        </div>
+
+        <h3 style="text-align:left; margin-bottom:5px;">
+            Liste des projets de l'upw {{ auth()->user()->name }} de l'année {{ $year }}
+        </h3>
+    `;
+
+    categories.forEach(cat => {
+        let filtered = projects.filter(p => normalizeString(p.type) === normalizeString(cat));
+
+        let totalAlloue = 0;
+        let totalEngage = 0;
+        let totalPaye   = 0;
+        let stateCounts = { E: 0, P: 0, R: 0, NL: 0, A: 0 };
+
+        html += `
+            <div style="text-transform: capitalize; font-size: 12px; color: #555; margin-top: 15px; margin-bottom: 5px;">
+                ${cat}
+            </div>
+
+            <table border="1" width="100%" cellspacing="0" cellpadding="4" style="border-collapse:collapse; font-size:10px; text-align:center;">
+                <thead>
+                    <tr style="background:#f1f1f1;">
+                        <th>Désignation</th>
+                        <th>Financement</th>
+                        <th>Montant alloué</th>
+                        <th>Montants des engagements cumulés</th>
+                        <th>Montant des paiements cumulés</th>
+                        <th>Delai Etudes</th>
+                        <th>Delai Réalisation</th>
+                        <th>ODS Etudes</th>
+                        <th>ODS Réalisation</th>
+                        <th>E</th>
+                        <th>P</th>
+                        <th>R</th>
+                        <th>NL</th>
+                        <th>A</th>
+                        <th>Taux d'avancement</th>
+                        <th>Date réception</th>
+                        <th>Observations / Contraintes</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        if (filtered.length > 0) {
+            filtered.forEach(p => {
+                let alloue = Number(p.montantAlloue ?? 0);
+                let engage = Number(p.montantEC ?? 0);
+                let paye   = Number(p.montantPC ?? 0);
+
+                totalAlloue += alloue;
+                totalEngage += engage;
+                totalPaye   += paye;
+
+                if (p.etatPhysique) {
+                    stateCounts[p.etatPhysique] = (stateCounts[p.etatPhysique] || 0) + 1;
+                    globalStates[p.etatPhysique] = (globalStates[p.etatPhysique] || 0) + 1;
+                }
+
+                html += `
+                    <tr>
+                        <td style="color: blue; text-decoration: underline;">${p.designation}</td>
+                        <td>${p.finance ?? '-'}</td>
+                        <td>${alloue.toFixed(2)}</td>
+                        <td>${engage.toFixed(2)}</td>
+                        <td>${paye.toFixed(2)}</td>
+                        <td>${p.delaiEtudes ?? '-'}</td>
+                        <td>${p.delaiRealisation ?? '-'}</td>
+                        <td>${p.odsEtudes ?? '-'}</td>
+                        <td>${p.odsRealisation ?? '-'}</td>
+                        <td>${p.etatPhysique === 'E' ? '1' : ''}</td>
+                        <td>${p.etatPhysique === 'P' ? '1' : ''}</td>
+                        <td>${p.etatPhysique === 'R' ? '1' : ''}</td>
+                        <td>${p.etatPhysique === 'NL' ? '1' : ''}</td>
+                        <td>${p.etatPhysique === 'A' ? '1' : ''}</td>
+                        <td>${p.tauxA ?? 0}%</td>
+                        <td>${p.dateReception ?? '-'}</td>
+                        <td>${p.observations ?? '-'}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html += `
+                <tr>
+                    <td colspan="17" style="text-align:center; color:#888;">Aucun projet</td>
+                </tr>
+            `;
+        }
+
+        html += `
+                <tr style="font-weight:bold; background:#eee;">
+                    <td colspan="2" style="text-align:left;">Total ${cat}</td>
+                    <td>${totalAlloue.toFixed(2)}</td>
+                    <td>${totalEngage.toFixed(2)}</td>
+                    <td>${totalPaye.toFixed(2)}</td>
+                    <td colspan="12"></td>
+                </tr>
+                </tbody>
+            </table>
+        `;
+
+        globalAlloue += totalAlloue;
+        globalEngage += totalEngage;
+        globalPaye   += totalPaye;
     });
 
     // show ALL tab contents
@@ -573,7 +741,7 @@ function printAllProjects() {
     header.id = 'print-header';
     header.innerHTML = `
         <div style="margin-bottom:30px">
-            <img src="{{ asset('img/logo COPY.png') }}" width="200">
+            <img src="{{ asset('img/logo.png') }}" width="200">
             <h3 style="margin-top:10px">
                 Liste des projets – Année {{ $year }}
             </h3>
@@ -587,6 +755,8 @@ function printAllProjects() {
     location.reload();
 }
 </script>
+
+
 <script>
 document.getElementById('select-recap')?.addEventListener('change', function () {
     const recap = this.value;
@@ -600,5 +770,42 @@ document.getElementById('select-recap')?.addEventListener('change', function () 
     }
 });
 </script>
+<div id="print-canvas" style="display:none; padding:30px; font-family:Arial;">
+    
+    <div style="margin-bottom:30px;">
+        <img src="{{ asset('img/logo-head.png') }}" width="220">
+    </div>
+
+    <h3 style="text-align:center; margin-bottom:30px;">
+        Liste des projets de l'UPW {{ auth()->user()->name }}  
+        de l'année {{ $year }}
+    </h3>
+
+    <table border="1" width="100%" cellspacing="0" cellpadding="5"
+           style="border-collapse:collapse; font-size:12px; text-align:center;">
+
+        <thead>
+            <tr style="background:#f2f2f2;">
+                <th>Désignation</th>
+                <th>Financement</th>
+                <th>Montant alloué</th>
+                <th>Montants engagés cumulés</th>
+                <th>Montants paiements cumulés</th>
+                <th>ODS</th>
+                <th>État physique</th>
+                <th>Taux</th>
+                <th>Date réception</th>
+                <th>Observations</th>
+            </tr>
+        </thead>
+
+        <tbody id="print-body">
+        </tbody>
+
+        <tfoot id="print-footer">
+        </tfoot>
+
+    </table>
+</div>
 
 @endsection

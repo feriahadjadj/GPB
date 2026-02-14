@@ -243,7 +243,7 @@ body::before {
 
 <!-- LOGIN CARD -->
 <div class="login-card">
-  <img src="{{ asset('img/LOGOAP.svg') }}" alt="Algérie Poste" style="width:140px; margin-bottom:20px;">
+  <img src="{{ asset('img/logo.png') }}" alt="Algérie Poste" style="width:140px; margin-bottom:20px;">
 
 <!-- Small yellow separator -->
 <div style="width:60px; height:4px; background-color:#FDC90A; margin:15px 0; border-radius:2px;"></div>

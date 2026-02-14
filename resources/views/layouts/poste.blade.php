@@ -605,23 +605,15 @@ body {
     height: 46px;
     margin-right: 12px;
 }
-/* Blinking animation */
 @keyframes blink {
-    0% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-    100% {
-        opacity: 1;
-    }
+    0% { opacity: 1; }
+    50% { opacity: 0.2; }
+    100% { opacity: 1; }
 }
-
 .blinking {
     animation: blink 1s infinite;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.7); /* Adds a glow to make it obvious */
 }
-
 
 /* SHOW */
 .dropdown.show {
@@ -767,6 +759,7 @@ main.content {
 <body>
 
 <div class="app">
+    
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -881,7 +874,7 @@ main.content {
         
 
         <!-- Logo Right-Aligned -->
-        <img src="{{ asset('img/LOGO copy.png') }}" alt="Logo" class="topbar-logo">
+        <img src="{{ asset('img/logo.png') }}" alt="Logo" class="topbar-logo">
     </div>
 </header>
 
@@ -962,19 +955,28 @@ document.addEventListener('click', function(e) {
 <script>
 // Check if there are new notifications and add the blinking effect
 document.addEventListener('DOMContentLoaded', function() {
-    const notificationBadge = document.getElementById('notification-badge');
-    const notificationBell = document.getElementById('notification-bell');
+    const badge = document.getElementById('notification-badge');
+    const bell = document.getElementById('notification-bell');
     
-    // Check if there are new notifications and add blinking
-    if (parseInt(notificationBadge.textContent) > 0) {
-        notificationBadge.classList.add('blinking');
+    if (!badge) return;
+
+    const currentCount = parseInt(badge.textContent.trim());
+    const lastSeenCount = sessionStorage.getItem('lastSeenNotificationCount');
+
+    // Only blink if there are notifications AND the count is higher than what we last saw
+    if (currentCount > 0 && (!lastSeenCount || currentCount > parseInt(lastSeenCount))) {
+        badge.classList.add('blinking');
+    } else {
+        badge.classList.remove('blinking');
     }
 
-    // When the notification bell is clicked, stop the blinking effect
-    notificationBell.addEventListener('click', function() {
-        notificationBadge.classList.remove('blinking');
+    // When the bell is clicked, save the current count so we stop blinking
+    bell.addEventListener('click', function() {
+        sessionStorage.setItem('lastSeenNotificationCount', currentCount);
+        badge.classList.remove('blinking');
     });
 });
+</script>
 
 </body>
 </html>

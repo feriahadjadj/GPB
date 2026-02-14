@@ -1,10 +1,14 @@
 
-    <div class="well" id="{{$n['id']}}N" style="padding: 5px;">
+    <div class="container-fluid px-2 px-md-4">
+    <div class="row justify-content-center">
+    <div class="col-12 col-xl-11 col-xxl-10">
+
+      <div class="well table-responsive" id="{{$n['id']}}N" style="padding: 5px;">
 
         {{-- <h2 class="recap-title float-left">{{$key}}</h2> --}}
 
         <div class="table-responsive">
-        <table id="resultA" class="table resultA table-bordered table-condensed">
+        <table id="resultA" class="table resultA table-bordered table-condensed w-100">
             <thead class="thead-dark">
 
                 <tr>
@@ -93,3 +97,7 @@
         </div>
 
     </div>
+    </div>
+    </div>
+  </div>
+</div>

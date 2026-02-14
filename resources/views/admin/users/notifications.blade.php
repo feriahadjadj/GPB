@@ -53,7 +53,7 @@
                     <div class="row">
                         <div class="col-md-3"> <span class="badge badge-primary badge-pill   "> {{$notification->data['type']}} </span></div>
                         <div class="col-md-6">{{$notification->data['text']}}</div>
-                        <div class="col-md-2"><span class="badge badge-warning badge-pill float-right">{{$notification->created_at->diffForHumans()}}</span> </div>
+                        <div class="col-md-2"><span class="badge badge-warning badge-pill float-right">{{ substr((string) $notification->getOriginal('created_at'), 0, 16) }}</span> </div>
                         <div class="col-md-1"><span class=" float-right"><input type="checkbox" id="{{$notification->id}}"  name="notRead" value="{{$notification->id}}"></span> </div>
                     </div>
                 </a>
@@ -62,8 +62,8 @@
                     <div class="row">
                         <div class="col-md-3"> <span class="badge badge-primary badge-pill   "> {{$notification->data['type']}} </span></div>
                         <div class="col-md-6">{{$notification->data['text']}}</div>
-                        <div class="col-md-2"><span class="badge badge-warning badge-pill float-right">{{$notification->created_at->diffForHumans()}}</span> </div>
-                        <div class="col-md-1"><span class=" float-right"><input type="checkbox" id="{{$notification->id}} name="Read" value="{{$notification->id}}"></span> </div>
+                        <div class="col-md-2"><span class="badge badge-warning badge-pill float-right">{{ substr((string) $notification->getOriginal('created_at'), 0, 16) }}</span> </div>
+                      <div class="col-md-1"><span class=" float-right"><input type="checkbox" id="{{$notification->id}}" name="Read" value="{{$notification->id}}"></span> </div>
 
                     </div>
                 </a>

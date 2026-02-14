@@ -6,6 +6,13 @@
 
 @endcan
 
+<style>
+    .recap-title{
+        text-align: center;
+        margin: 15px 0 25px;
+        font-weight: 800;
+    }
+</style>
 
 <div class="container-fluid">
     @can('manage-users') @endcan
@@ -68,7 +75,7 @@
                 <div class="justify-content-center col-lg-12 col-md-12">
                     <div class="well tableContainer table-responsive" id="content" style="padding: 5px;" >
 
-                        <table id="resultA" class="table resultA table-bordered table-condensed scrollTable">
+                        <table id="resultA" class="table resultA table-bordered table-condensed scrollTable w-100">
                             <thead class="thead-dark fixedHeader">
 
                                 <tr>
@@ -84,12 +91,7 @@
                                 </tr>
 
                                 <tr>
-                                    <th>construction</th>
-                                    <th>Réhabilitation</th>
-                                    <th>Aménagement</th>
-                                    <th>Etancheïté</th>
-                                    <th>Logement d'astreinte</th>
-
+                                  
                                 </tr>
                             </thead>
 
@@ -150,7 +152,6 @@
         </section>
 
     </div>
-
 </div>
 
 <!------------------------------------------------------------------------------------->

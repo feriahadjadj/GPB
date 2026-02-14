@@ -6,6 +6,14 @@
 
 @endcan
 
+<style>
+    .recap-title{
+        text-align: center;
+        margin: 15px 0 25px;
+        font-weight: 800;
+    }
+</style>
+
 <div class="container-fluid">
     @can('manage-users') @endcan
     <div class="justify-content-center row">
@@ -56,7 +64,7 @@
                 <div class="justify-content-center col-lg-12 col-md-12">
                     <div class="well table-responsive" id="content" style="padding: 5px;">
 
-                        <table id="resultA" class="table resultA table-bordered table-condensed">
+                        <table id="resultA" class="table resultA table-bordered table-condensed w-100">
                             <thead class="thead-dark">
 
                                 <tr>
@@ -131,7 +139,6 @@
         </section>
 
     </div>
-
 </div>
 
 <!------------------------------------------------------------------------------------->
