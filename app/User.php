@@ -72,7 +72,8 @@ class User extends Authenticatable
 
     public static function getUserName($id)
     {
-        return User::find($id)->name;
+        $user = User::find($id);
+        return $user ? $user->name : 'Utilisateur inconnu';
     }
 
     public function isUser($email)

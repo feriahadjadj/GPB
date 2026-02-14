@@ -86,6 +86,9 @@ class Projet extends Model
     public static function getNbProjet(String $id, $year, $finance)
     {
         $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
         if ($finance == 'tout') {
 
             $a = $user->projet()
@@ -150,6 +153,9 @@ class Projet extends Model
     {
 
         $user = User::find($id);
+        if (!$user) {
+            return collect();
+        }
 
         if ($finance == 'tout') {
             $projets = $user->projet()
@@ -172,11 +178,16 @@ class Projet extends Model
         }
 
         foreach ($projets as $i => $p) {
-            $lastDate = Carbon::parse($p->avancement->first()['created_at']);
-            $diffDate = $lastDate->diffInDays(Carbon::now()) - Projet::delayDays($p);
+            $firstAvancement = $p->avancement->first();
+            if ($firstAvancement) {
+                $lastDate = Carbon::parse($firstAvancement->created_at);
+                $diffDate = $lastDate->diffInDays(Carbon::now()) - Projet::delayDays($p);
 
-            if ($diffDate >= 30) {
-                $p->retard = true;
+                if ($diffDate >= 30) {
+                    $p->retard = true;
+                } else {
+                    $p->retard = false;
+                }
             } else {
                 $p->retard = false;
             }
@@ -188,6 +199,9 @@ class Projet extends Model
     public static function totalMontant(String $id, $year, string $finance, string $nature, string $montant)
     {
         $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
 
         if ($finance == 'tout') {
 
@@ -243,6 +257,9 @@ class Projet extends Model
     {
 
         $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
 
         if ($finance == 'tout') {
             $a = $user->projet()
@@ -278,6 +295,9 @@ class Projet extends Model
     {
 
         $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
 
         if ($finance == 'tout') {
 
@@ -311,6 +331,9 @@ class Projet extends Model
     public static function countEtatTotal(String $id, $year, $finance, string $etat)
     {
         $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
         if ($finance == 'tout') {
 
             $a = $user->projet()
@@ -441,12 +464,12 @@ class Projet extends Model
             ->orderBy('date_reprise', 'desc')
             ->get();
 
-        if ($retards != "[]") {
+        if ($retards->isNotEmpty() && $p->avancement->first()) {
             $r = $retards->first();
 
             $arret = Carbon::parse($p
                 ->avancement
-                ->first()['created_at']);
+                ->first()->created_at);
             $reprise = Carbon::parse($r->date_reprise);
             $days = $arret->diffInDays($reprise);
         }
@@ -514,8 +537,12 @@ class Projet extends Model
 
     public static function getNbNatureP(string $finance, string $id, $year, string $nature)
     {
+        $user = User::find($id);
+        if (!$user) {
+            return '0';
+        }
         if ($finance == 'tout') {
-            $a = User::find($id)->projet()->selectRaw('count(*) as count')->where('nature', $nature)->where(function ($q) use ($year) {
+            $a = $user->projet()->selectRaw('count(*) as count')->where('nature', $nature)->where(function ($q) use ($year) {
                 $q->whereYear('dateMiseEnOeuvre', $year)->orWhereNull('dateMiseEnOeuvre');
             })->where(function ($q) use ($year) {
                 $q->whereYear('odsEtude', '<=', $year)->orWhere(function ($q) use ($year) {
@@ -523,7 +550,7 @@ class Projet extends Model
                 });
             })->first()->count;
         } else {
-            $a = User::find($id)->projet()->selectRaw('count(*) as count')->where([['nature', '=', $nature], ['finance', 'LIKE', '%' . $finance . '%']])->where(function ($q) use ($year) {
+            $a = $user->projet()->selectRaw('count(*) as count')->where([['nature', '=', $nature], ['finance', 'LIKE', '%' . $finance . '%']])->where(function ($q) use ($year) {
                 $q->whereYear('dateMiseEnOeuvre', $year)->orWhereNull('dateMiseEnOeuvre');
             })->where(function ($q) use ($year) {
                 $q->whereYear('odsEtude', '<=', $year)->orWhere(function ($q) use ($year) {
